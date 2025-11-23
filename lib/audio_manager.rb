@@ -85,9 +85,37 @@ class AudioManager
   def play_sound(sound_name, volume_override = nil)
     return unless @sound_enabled
     
+    # Перезагружаем звук, если он не загружен (на случай, если окно еще не было создано)
     unless @sounds[sound_name]
-      puts "⚠️  Звук #{sound_name} не загружен (файл не найден или ошибка загрузки)"
-      return
+      # Пробуем загрузить звук заново
+      sound_files = {
+        attack: 'sounds/attack.wav',
+        enemy_hit: 'sounds/enemy_hit.wav',
+        enemy_death: 'sounds/enemy_death.wav',
+        level_up: 'sounds/level_up.wav',
+        pickup: 'sounds/pickup.wav',
+        chest_open: 'sounds/chest_open.wav',
+        upgrade_select: 'sounds/upgrade_select.wav',
+        player_hit: 'sounds/player_hit.wav',
+        boss_spawn: 'sounds/boss_spawn.wav',
+        elite_attack: 'sounds/elite_attack.wav',
+        projectile_shoot: 'sounds/projectile_shoot.wav',
+        barrel_explode: 'sounds/barrel_explode.wav'
+      }
+      
+      path = sound_files[sound_name]
+      if path && File.exist?(path)
+        begin
+          @sounds[sound_name] = Sound.new(path)
+          puts "  ✓ Перезагружен звук: #{sound_name}" if ENV['DEBUG']
+        rescue => e
+          puts "  ❌ Не удалось перезагрузить звук #{path}: #{e.message}"
+          return
+        end
+      else
+        puts "⚠️  Звук #{sound_name} не загружен (файл не найден: #{path})"
+        return
+      end
     end
     
     begin
@@ -101,27 +129,14 @@ class AudioManager
       end
       
       sound.volume = [volume / 100.0, 1.0].min  # Ограничиваем громкость до 1.0
-      
-      # Пробуем воспроизвести звук
-      begin
-        sound.play
-        puts "🔊 Воспроизведен звук: #{sound_name} (громкость: #{volume}%)" if ENV['DEBUG']
-      rescue => play_error
-        puts "❌ Ошибка при вызове sound.play для #{sound_name}: #{play_error.message}"
-        # Пробуем альтернативный способ
-        begin
-          sound.volume = volume / 100.0
-          sound.play
-        rescue => e2
-          puts "❌ Повторная ошибка воспроизведения: #{e2.message}"
-        end
-      end
+      sound.play
+      puts "🔊 Воспроизведен звук: #{sound_name} (громкость: #{volume}%)" if ENV['DEBUG']
     rescue => e
       # Выводим ошибки воспроизведения звука для отладки
       puts "❌ Ошибка воспроизведения звука #{sound_name}: #{e.message}"
       puts "   #{e.backtrace.first}" if ENV['DEBUG']
     end
-  rescue => e
+  end
     # Выводим ошибки воспроизведения звука для отладки
     puts "❌ Ошибка воспроизведения звука #{sound_name}: #{e.message}"
     puts "   #{e.backtrace.first}" if ENV['DEBUG']
