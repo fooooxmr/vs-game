@@ -1517,6 +1517,9 @@ class HeroSelection
     when :whip then "Кнут"
     when :magic_wand then "Магическая палочка"
     when :knife then "Нож"
+    when :axe then "Топор"
+    when :cross then "Крест"
+    when :garlic then "Чеснок"
     else "Оружие"
     end
 
