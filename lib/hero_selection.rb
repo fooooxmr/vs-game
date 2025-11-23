@@ -634,8 +634,10 @@ class HeroSelection
     icon_center_y = card_y + 120 # Позиция иконки в карточке
     icon_size = selected ? 50 : 45 # Размер спрайта
     
+    # Получаем hero_data из HEROES
+    hero_data = HEROES[hero_key]
     # Определяем тип спрайта из hero_data
-    sprite_type = hero_data[:sprite_type] || :player
+    sprite_type = hero_data ? hero_data[:sprite_type] : :player
     
     # Удаляем старый спрайт если есть
     if @hero_sprites[index]

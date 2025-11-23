@@ -261,7 +261,7 @@ class Game
         proj_speed = p[:speed] || 200
         proj_range = p[:range] || 200
         
-        # Для креста передаем позицию игрока и длительность
+        # Для креста и чеснока передаем позицию игрока и длительность
         options = p.dup
         if proj_type == :cross
           weapon = @player.weapons.find { |w| w.type == :cross }
@@ -273,6 +273,24 @@ class Game
             cross_count = @player.weapons.count { |w| w.type == :cross }
             options[:initial_angle] = @cross_angle || 0
             @cross_angle = (@cross_angle || 0) + Math::PI * 2 / [cross_count, 1].max
+          end
+        elsif proj_type == :garlic
+          # Для чеснока удаляем старые проектили чеснока перед созданием нового
+          @projectiles.reject! do |proj|
+            if proj.type == :garlic && proj.active
+              proj.remove
+              true
+            else
+              false
+            end
+          end
+          # Передаем позицию игрока для чеснока
+          options[:player_x] = @player.x
+          options[:player_y] = @player.y
+          weapon = @player.weapons.find { |w| w.type == :garlic }
+          if weapon
+            # Чеснок активен пока оружие существует, но используем длительность для контроля
+            options[:duration] = weapon.duration || 999.0 # Очень большая длительность
           end
         end
         

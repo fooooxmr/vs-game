@@ -86,10 +86,13 @@ class Projectile
 
     @time_alive += delta_time
     
-    # Обновляем позицию игрока для креста
-    if @type == :cross && player_x && player_y
+    # Обновляем позицию игрока для креста и чеснока
+    if (@type == :cross || @type == :garlic) && player_x && player_y
       @player_x = player_x
       @player_y = player_y
+      # Чеснок и крест следуют за игроком
+      @x = player_x
+      @y = player_y
     end
 
     case @type
@@ -103,9 +106,9 @@ class Projectile
       update_garlic(enemies, delta_time)
     end
 
-    # Для креста проверяем длительность
-    if @type == :cross
-      if @time_alive >= @duration
+    # Для креста и чеснока проверяем длительность
+    if @type == :cross || @type == :garlic
+      if @duration && @time_alive >= @duration
         @active = false
       end
     else
