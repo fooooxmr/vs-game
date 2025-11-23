@@ -405,7 +405,7 @@ class Enemy
             type: :final_boss_spiral,
             damage: @damage * 1.3,
             radius: 60,
-            delay: 12.0,  # Увеличено с 8.0 до 12.0 (еще в 1.5 раза)
+            delay: 15.0,  # Увеличено с 12.0 до 15.0 (еще в 1.25 раза)
             center_x: predicted_x,
             center_y: predicted_y,
             count: 5,  # 5 кругов в спирали
@@ -422,7 +422,7 @@ class Enemy
             type: :final_boss_cross,
             damage: @damage * 1.4,
             radius: 90,
-            delay: 15.0,  # Увеличено с 9.0 до 15.0 (еще в 1.67 раза)
+            delay: 18.0,  # Увеличено с 15.0 до 18.0 (еще в 1.2 раза)
             center_x: predicted_x,
             center_y: predicted_y,
             enemy: self
@@ -438,7 +438,7 @@ class Enemy
             type: :final_boss_ring,
             damage: @damage * 1.2,
             radius: 70,
-            delay: 12.0,  # Увеличено с 8.0 до 12.0 (еще в 1.5 раза)
+            delay: 15.0,  # Увеличено с 12.0 до 15.0 (еще в 1.25 раза)
             center_x: predicted_x,
             center_y: predicted_y,
             count: 8,  # 8 кругов в кольце
@@ -455,7 +455,7 @@ class Enemy
             type: :final_boss_wave,
             damage: @damage * 1.3,
             radius: 80,
-            delay: 12.0,  # Увеличено с 8.0 до 12.0 (еще в 1.5 раза)
+            delay: 15.0,  # Увеличено с 12.0 до 15.0 (еще в 1.25 раза)
             center_x: predicted_x,
             center_y: predicted_y,
             count: 4,  # 4 круга в волне
@@ -467,7 +467,7 @@ class Enemy
             type: :final_boss_explosion,
             damage: @damage * 1.5,
             radius: 200,
-            delay: 15.0,  # Увеличено с 10.0 до 15.0 (еще в 1.5 раза)
+            delay: 18.0,  # Увеличено с 15.0 до 18.0 (еще в 1.2 раза)
             x: @x,
             y: @y,
             enemy: self
@@ -506,7 +506,7 @@ class Enemy
             type: :boss_pattern_large_circle,
             damage: @damage * 1.5,
             radius: 100,
-            delay: 12.0,  # Увеличено с 8.0 до 12.0 (еще в 1.5 раза)
+            delay: 15.0,  # Увеличено с 12.0 до 15.0 (еще в 1.25 раза)
             x: predicted_x,
             y: predicted_y,
             enemy: self

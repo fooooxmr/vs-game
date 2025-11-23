@@ -134,8 +134,40 @@ class AudioManager
       end
       
       sound.volume = [volume / 100.0, 1.0].min  # Ограничиваем громкость до 1.0
-      sound.play
-      puts "🔊 Воспроизведен звук: #{sound_name} (громкость: #{volume}%)" if ENV['DEBUG']
+      
+      # Пробуем воспроизвести звук
+      begin
+        sound.play
+        puts "🔊 Воспроизведен звук: #{sound_name} (громкость: #{volume}%)" if ENV['DEBUG']
+      rescue => play_error
+        puts "❌ Ошибка при вызове sound.play для #{sound_name}: #{play_error.message}"
+        # Пробуем перезагрузить звук и воспроизвести снова
+        begin
+          sound_files = {
+            attack: 'sounds/attack.wav',
+            enemy_hit: 'sounds/enemy_hit.wav',
+            enemy_death: 'sounds/enemy_death.wav',
+            level_up: 'sounds/level_up.wav',
+            pickup: 'sounds/pickup.wav',
+            chest_open: 'sounds/chest_open.wav',
+            upgrade_select: 'sounds/upgrade_select.wav',
+            player_hit: 'sounds/player_hit.wav',
+            boss_spawn: 'sounds/boss_spawn.wav',
+            elite_attack: 'sounds/elite_attack.wav',
+            projectile_shoot: 'sounds/projectile_shoot.wav',
+            barrel_explode: 'sounds/barrel_explode.wav'
+          }
+          path = sound_files[sound_name]
+          if path && File.exist?(path)
+            @sounds[sound_name] = Sound.new(path)
+            @sounds[sound_name].volume = [volume / 100.0, 1.0].min
+            @sounds[sound_name].play
+            puts "  ✓ Звук перезагружен и воспроизведен"
+          end
+        rescue => e2
+          puts "  ❌ Повторная ошибка: #{e2.message}"
+        end
+      end
     rescue => e
       # Выводим ошибки воспроизведения звука для отладки
       puts "❌ Ошибка воспроизведения звука #{sound_name}: #{e.message}"
