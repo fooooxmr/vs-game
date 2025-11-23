@@ -69,15 +69,21 @@ class AudioManager
     end
     
     # Загружаем фоновую музыку (если есть)
-    if File.exist?('sounds/music.ogg') || File.exist?('sounds/music.wav')
-      music_path = File.exist?('sounds/music.ogg') ? 'sounds/music.ogg' : 'sounds/music.wav'
+    music_path = nil
+    if File.exist?('sounds/music.ogg')
+      music_path = 'sounds/music.ogg'
+    elsif File.exist?('sounds/music.wav')
+      music_path = 'sounds/music.wav'
+    end
+    
+    if music_path
       begin
         @music = Music.new(music_path)
         @music.loop = true
         @music.volume = @music_volume / 100.0
-        puts "Фоновая музыка загружена: #{music_path}" if ENV['DEBUG']
+        puts "🎵 Фоновая музыка загружена: #{music_path} (громкость: #{@music_volume}%)"
       rescue => e
-        puts "Не удалось загрузить музыку: #{e.message}"
+        puts "❌ Не удалось загрузить музыку #{music_path}: #{e.message}"
         @music = nil
       end
     else
@@ -176,12 +182,18 @@ class AudioManager
   end
 
   def play_music
-    return unless @music
-    @music.play
-    puts "🎵 Фоновая музыка запущена (громкость: #{@music_volume}%)"
-  rescue => e
-    puts "❌ Ошибка воспроизведения музыки: #{e.message}"
-    puts "   #{e.backtrace.first}" if ENV['DEBUG']
+    unless @music
+      puts "⚠️  Не удалось воспроизвести музыку: файл не загружен"
+      return
+    end
+    
+    begin
+      @music.play
+      puts "🎵 Фоновая музыка запущена (громкость: #{@music_volume}%)"
+    rescue => e
+      puts "❌ Ошибка воспроизведения музыки: #{e.message}"
+      puts "   #{e.backtrace.first}" if ENV['DEBUG']
+    end
   end
 
   def stop_music
