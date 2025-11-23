@@ -261,6 +261,21 @@ class Game
         proj_speed = p[:speed] || 200
         proj_range = p[:range] || 200
         
+        # Для креста передаем позицию игрока и длительность
+        options = p.dup
+        if proj_type == :cross
+          weapon = @player.weapons.find { |w| w.type == :cross }
+          if weapon
+            options[:player_x] = @player.x
+            options[:player_y] = @player.y
+            options[:duration] = weapon.duration
+            # Распределяем кресты равномерно вокруг игрока
+            cross_count = @player.weapons.count { |w| w.type == :cross }
+            options[:initial_angle] = @cross_angle || 0
+            @cross_angle = (@cross_angle || 0) + Math::PI * 2 / [cross_count, 1].max
+          end
+        end
+        
         projectile = Projectile.new(
           proj_type, 
           proj_x, 
@@ -269,7 +284,7 @@ class Game
           proj_damage, 
           proj_speed, 
           proj_range, 
-          p
+          options
         )
         
         @projectiles << projectile
