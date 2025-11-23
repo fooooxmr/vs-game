@@ -680,6 +680,28 @@ class Game
     @elite_attack_indicators << indicator
   end
   
+  def create_boss_ranged_attack_indicator(x, y, radius, delay, damage)
+    # Создаем индикатор дальней атаки босса (темно-красный круг)
+    screen_x, screen_y = @camera.world_to_screen(x, y)
+    indicator = {
+      x: x,
+      y: y,
+      radius: radius,
+      delay: delay,
+      time: 0.0,
+      damage: damage,
+      type: :boss_ranged,
+      shape: Circle.new(
+        x: screen_x, y: screen_y,
+        radius: radius,
+        color: [200, 0, 0, 0.5],  # Темно-красный
+        z: 498
+      )
+    }
+    @elite_attack_indicators ||= []
+    @elite_attack_indicators << indicator
+  end
+  
   def create_elite_melee_attack_indicator(x, y, radius, delay, damage)
     # Создаем индикатор ближней атаки (оранжево-красный круг вокруг врага)
     screen_x, screen_y = @camera.world_to_screen(x, y)
@@ -1046,6 +1068,28 @@ class Game
         x: screen_x, y: screen_y,
         radius: radius,
         color: [255, 0, 0, 0.7],  # Ярко-красный, более непрозрачный
+        z: 498
+      )
+    }
+    @elite_attack_indicators ||= []
+    @elite_attack_indicators << indicator
+  end
+  
+  def create_boss_ranged_attack_indicator(x, y, radius, delay, damage)
+    # Создаем индикатор дальней атаки босса (темно-красный круг)
+    screen_x, screen_y = @camera.world_to_screen(x, y)
+    indicator = {
+      x: x,
+      y: y,
+      radius: radius,
+      delay: delay,
+      time: 0.0,
+      damage: damage,
+      type: :boss_ranged,
+      shape: Circle.new(
+        x: screen_x, y: screen_y,
+        radius: radius,
+        color: [200, 0, 0, 0.5],  # Темно-красный
         z: 498
       )
     }
