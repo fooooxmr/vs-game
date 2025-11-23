@@ -43,7 +43,12 @@ class AudioManager
       end
     end
     
-    puts "Загружено звуков: #{loaded_count}/#{sound_files.size}" if ENV['DEBUG']
+    if loaded_count == 0
+      puts "⚠️  ВНИМАНИЕ: Звуковые файлы не найдены в папке sounds/"
+      puts "   Скачайте звуки согласно инструкции в sounds/README.md"
+    else
+      puts "✓ Загружено звуков: #{loaded_count}/#{sound_files.size}" if ENV['DEBUG']
+    end
     
     # Загружаем фоновую музыку (если есть)
     if File.exist?('sounds/music.ogg') || File.exist?('sounds/music.wav')
@@ -58,20 +63,25 @@ class AudioManager
         @music = nil
       end
     else
-      puts "Фоновая музыка не найдена (ищем sounds/music.ogg или sounds/music.wav)" if ENV['DEBUG']
+      puts "⚠️  Фоновая музыка не найдена (ищем sounds/music.ogg или sounds/music.wav)"
+      puts "   Добавьте файл music.ogg или music.wav в папку sounds/ для фоновой музыки"
     end
   end
 
   def play_sound(sound_name, volume_override = nil)
     return unless @sound_enabled
-    return unless @sounds[sound_name]
+    
+    unless @sounds[sound_name]
+      puts "Звук #{sound_name} не загружен (файл не найден или ошибка загрузки)" if ENV['DEBUG']
+      return
+    end
     
     sound = @sounds[sound_name]
     volume = volume_override || @sfx_volume
     sound.volume = volume / 100.0
     sound.play
   rescue => e
-    # Игнорируем ошибки воспроизведения звука
+    # Выводим ошибки воспроизведения звука для отладки
     puts "Ошибка воспроизведения звука #{sound_name}: #{e.message}" if ENV['DEBUG']
   end
 
