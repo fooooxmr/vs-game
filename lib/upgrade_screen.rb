@@ -103,7 +103,6 @@ class UpgradeScreen
       y: 80,
       size: 64,
       color: '#000000',
-      font: nil,
       z: 2010
     )
     @title_text.x = @window_width / 2 - @title_text.width / 2
@@ -115,7 +114,6 @@ class UpgradeScreen
       y: @window_height - 40,
       size: 20,
       color: '#000000',
-      font: nil,
       z: 2010
     )
     @hint_text.x = @window_width / 2 - @hint_text.width / 2
@@ -143,7 +141,6 @@ class UpgradeScreen
         y: y_pos,
         size: 40,
         color: '#000000',
-        font: nil,
         z: 2010
       )
       name_text.x = @window_width / 2 - name_text.width / 2
@@ -156,7 +153,6 @@ class UpgradeScreen
         y: y_pos + 45,
         size: 24,
         color: '#000000',
-        font: nil,
         z: 2010
       )
       level_text.x = @window_width / 2 - level_text.width / 2
@@ -169,7 +165,6 @@ class UpgradeScreen
         y: y_pos + 75,
         size: 20,
         color: '#000000',
-        font: nil,
         z: 2010
       )
       desc_text.x = @window_width / 2 - desc_text.width / 2
@@ -273,7 +268,6 @@ class UpgradeScreen
         y: y_pos + 30,
         size: icon_size,
         color: '#000000',
-        font: nil,
         z: 2010
       )
       @texts["upgrade_#{index}_icon"] = icon_text
@@ -286,7 +280,6 @@ class UpgradeScreen
         y: y_pos + 20,
         size: 38,
         color: '#000000',
-        font: nil,
         z: 2010
       )
       # Ограничиваем ширину названия
@@ -303,7 +296,6 @@ class UpgradeScreen
         y: y_pos + 60,
         size: 20,
         color: '#000000',
-        font: nil,
         z: 2010
       )
       @texts["upgrade_#{index}_type"] = type_text
@@ -318,7 +310,6 @@ class UpgradeScreen
           y: y_pos + 85,
           size: 20,
           color: rarity_color,
-          font: nil,
           z: 2010
         )
         @texts["upgrade_#{index}_rarity"] = rarity_text
@@ -332,7 +323,6 @@ class UpgradeScreen
           y: y_pos + 110,
           size: 18,
           color: '#000000',
-          font: nil,
           z: 2010
         )
         @texts["upgrade_#{index}_level"] = level_text
@@ -376,7 +366,6 @@ class UpgradeScreen
           y: desc_y + line_idx * 25,
           size: 18,
           color: '#000000',  # Черный для читаемости
-          font: nil,
           z: 2010
         )
         # Ограничиваем позицию, чтобы не выходить за правую границу

@@ -2804,7 +2804,6 @@ class Game
         y: @window_height / 2 - 80,
         size: 50,
         color: 'red',
-        font: nil
       )
       @ui_texts[:game_over].x = @window_width / 2 - @ui_texts[:game_over].width / 2
 
@@ -2815,7 +2814,6 @@ class Game
         y: @window_height / 2 - 20,
         size: 24,
         color: 'white',
-        font: nil
       )
       @ui_texts[:game_over_stats].x = @window_width / 2 - @ui_texts[:game_over_stats].width / 2
       
@@ -2836,7 +2834,6 @@ class Game
           y: @window_height / 2 + 20,
           size: 20,
           color: record_color,
-          font: nil
         )
         @ui_texts[:game_over_record].x = @window_width / 2 - @ui_texts[:game_over_record].width / 2
       end
@@ -2847,7 +2844,6 @@ class Game
         y: @window_height / 2 + 60,
         size: 20,
         color: 'gray',
-        font: nil
       )
       @ui_texts[:game_over_hint].x = @window_width / 2 - @ui_texts[:game_over_hint].width / 2
     end

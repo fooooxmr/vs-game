@@ -79,8 +79,7 @@ class HeroSelection
       x: @window_width / 2,
       y: 40,
       size: 72,
-      color: '#FFD700',
-      font: nil
+      color: '#FFD700'
     )
     @texts[:title].x = @window_width / 2 - @texts[:title].width / 2
 
@@ -90,8 +89,7 @@ class HeroSelection
       x: @window_width / 2,
       y: 110,
       size: 28,
-      color: '#CCCCCC',
-      font: nil
+      color: '#CCCCCC'
     )
     @texts[:subtitle].x = @window_width / 2 - @texts[:subtitle].width / 2
 
@@ -101,8 +99,7 @@ class HeroSelection
       x: @window_width / 2,
       y: @window_height - 40,
       size: 22,
-      color: '#888888',
-      font: nil
+      color: '#888888'
     )
     @texts[:hint].x = @window_width / 2 - @texts[:hint].width / 2
 
@@ -1439,7 +1436,6 @@ class HeroSelection
       y: y + 150,
       size: name_size,
       color: name_color,
-      font: nil
     )
     @texts["hero_#{index}_name".to_sym].x = x + card_width / 2 - @texts["hero_#{index}_name".to_sym].width / 2
 
@@ -1453,7 +1449,6 @@ class HeroSelection
         y: y + 200 + line_idx * 20,
         size: 16,
         color: '#CCCCCC',
-        font: nil
       )
       @texts["hero_#{index}_desc_#{line_idx}".to_sym].x = x + card_width / 2 - @texts["hero_#{index}_desc_#{line_idx}".to_sym].width / 2
     end
@@ -1475,7 +1470,6 @@ class HeroSelection
         y: stats_y + i * 25,
         size: 16,
         color: '#AAAAAA',
-        font: nil
       )
     end
 
@@ -1494,7 +1488,6 @@ class HeroSelection
       y: weapon_y,
       size: 16,
       color: selected ? '#FFD700' : '#FFA500',
-      font: nil
     )
     @texts["hero_#{index}_weapon".to_sym].x = x + card_width / 2 - @texts["hero_#{index}_weapon".to_sym].width / 2
   end

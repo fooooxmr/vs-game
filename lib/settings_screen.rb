@@ -23,7 +23,6 @@ class SettingsScreen
       y: 50,
       size: 50,
       color: 'white',
-      font: nil
     )
     @title_text.x = @window_width / 2 - @title_text.width / 2
 
@@ -36,7 +35,6 @@ class SettingsScreen
         y: y_pos,
         size: 30,
         color: 'white',
-        font: nil
       )
     end
 
@@ -51,7 +49,6 @@ class SettingsScreen
       y: @window_height - 30,
       size: 18,
       color: 'gray',
-      font: nil
     )
     @hint_text.x = @window_width / 2 - @hint_text.width / 2
   end
@@ -99,7 +96,6 @@ class SettingsScreen
         y: y_pos,
         size: 25,
         color: index == @selected_index ? 'yellow' : 'white',
-        font: nil
       )
     end
   end
