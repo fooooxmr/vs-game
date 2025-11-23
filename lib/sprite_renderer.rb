@@ -471,6 +471,321 @@ class SpriteRenderer
     )
   end
 
+  def create_berserker_shapes
+    # Z-индекс для игрока
+    base_z = 600
+    # Голова (более крупная, с шлемом)
+    @shapes[:head] = Circle.new(
+      x: @x,
+      y: @y - @size * 0.2,
+      radius: @size * 0.22,
+      color: '#F5DEB3',
+      z: base_z + 5
+    )
+    # Шлем с рогами
+    @shapes[:helmet] = Rectangle.new(
+      x: @x - @size * 0.25,
+      y: @y - @size * 0.35,
+      width: @size * 0.5,
+      height: @size * 0.2,
+      color: '#8B0000',
+      z: base_z + 4
+    )
+    # Рога
+    @shapes[:horn_left] = Triangle.new(
+      x1: @x - @size * 0.2, y1: @y - @size * 0.35,
+      x2: @x - @size * 0.3, y2: @y - @size * 0.5,
+      x3: @x - @size * 0.1, y3: @y - @size * 0.4,
+      color: '#654321',
+      z: base_z + 5
+    )
+    @shapes[:horn_right] = Triangle.new(
+      x1: @x + @size * 0.2, y1: @y - @size * 0.35,
+      x2: @x + @size * 0.3, y2: @y - @size * 0.5,
+      x3: @x + @size * 0.1, y3: @y - @size * 0.4,
+      color: '#654321',
+      z: base_z + 5
+    )
+
+    # Тело (тяжелая броня, красная)
+    @shapes[:body] = Rectangle.new(
+      x: @x - @size * 0.25,
+      y: @y - @size * 0.05,
+      width: @size * 0.5,
+      height: @size * 0.55,
+      color: '#8B0000',
+      z: base_z + 1
+    )
+
+    # Руки с топором
+    @shapes[:arm_left] = Rectangle.new(
+      x: @x - @size * 0.4,
+      y: @y,
+      width: @size * 0.12,
+      height: @size * 0.5,
+      color: '#F5DEB3',
+      z: base_z + 3
+    )
+    @shapes[:arm_right] = Rectangle.new(
+      x: @x + @size * 0.28,
+      y: @y - @size * 0.1,
+      width: @size * 0.12,
+      height: @size * 0.5,
+      color: '#F5DEB3',
+      z: base_z + 3
+    )
+
+    # Топор
+    @shapes[:axe_handle] = Rectangle.new(
+      x: @x + @size * 0.32,
+      y: @y - @size * 0.05,
+      width: @size * 0.08,
+      height: @size * 0.4,
+      color: '#654321',
+      z: base_z + 4
+    )
+    @shapes[:axe_blade] = Triangle.new(
+      x1: @x + @size * 0.4, y1: @y - @size * 0.2,
+      x2: @x + @size * 0.5, y2: @y - @size * 0.1,
+      x3: @x + @size * 0.4, y3: @y,
+      color: '#C0C0C0',
+      z: base_z + 5
+    )
+
+    # Ноги
+    @shapes[:leg_left] = Rectangle.new(
+      x: @x - @size * 0.2,
+      y: @y + @size * 0.4,
+      width: @size * 0.2,
+      height: @size * 0.35,
+      color: '#654321',
+      z: base_z + 1
+    )
+    @shapes[:leg_right] = Rectangle.new(
+      x: @x,
+      y: @y + @size * 0.4,
+      width: @size * 0.2,
+      height: @size * 0.35,
+      color: '#654321',
+      z: base_z + 1
+    )
+  end
+
+  def create_paladin_shapes
+    # Z-индекс для игрока
+    base_z = 600
+    # Голова (с золотым шлемом)
+    @shapes[:head] = Circle.new(
+      x: @x,
+      y: @y - @size * 0.2,
+      radius: @size * 0.2,
+      color: '#F5DEB3',
+      z: base_z + 5
+    )
+    # Золотой шлем
+    @shapes[:helmet] = Rectangle.new(
+      x: @x - @size * 0.22,
+      y: @y - @size * 0.32,
+      width: @size * 0.44,
+      height: @size * 0.18,
+      color: '#FFD700',
+      z: base_z + 4
+    )
+    # Крест на шлеме
+    @shapes[:helmet_cross] = Rectangle.new(
+      x: @x - @size * 0.05,
+      y: @y - @size * 0.35,
+      width: @size * 0.1,
+      height: @size * 0.12,
+      color: '#FFFFFF',
+      z: base_z + 5
+    )
+
+    # Тело (белая броня с крестом)
+    @shapes[:body] = Rectangle.new(
+      x: @x - @size * 0.22,
+      y: @y - @size * 0.05,
+      width: @size * 0.44,
+      height: @size * 0.5,
+      color: '#F0F0F0',
+      z: base_z + 1
+    )
+    # Крест на груди
+    @shapes[:chest_cross] = Rectangle.new(
+      x: @x - @size * 0.05,
+      y: @y + @size * 0.05,
+      width: @size * 0.1,
+      height: @size * 0.15,
+      color: '#FFD700',
+      z: base_z + 2
+    )
+
+    # Руки
+    @shapes[:arm_left] = Rectangle.new(
+      x: @x - @size * 0.35,
+      y: @y,
+      width: @size * 0.1,
+      height: @size * 0.45,
+      color: '#F5DEB3',
+      z: base_z + 3
+    )
+    @shapes[:arm_right] = Rectangle.new(
+      x: @x + @size * 0.25,
+      y: @y - @size * 0.05,
+      width: @size * 0.1,
+      height: @size * 0.45,
+      color: '#F5DEB3',
+      z: base_z + 3
+    )
+
+    # Щит
+    @shapes[:shield] = Rectangle.new(
+      x: @x - @size * 0.5,
+      y: @y + @size * 0.05,
+      width: @size * 0.2,
+      height: @size * 0.4,
+      color: '#FFD700',
+      z: base_z + 2
+    )
+    @shapes[:shield_cross] = Rectangle.new(
+      x: @x - @size * 0.4,
+      y: @y + @size * 0.15,
+      width: @size * 0.08,
+      height: @size * 0.12,
+      color: '#FFFFFF',
+      z: base_z + 3
+    )
+
+    # Меч
+    @shapes[:sword_handle] = Rectangle.new(
+      x: @x + @size * 0.3,
+      y: @y - @size * 0.05,
+      width: @size * 0.08,
+      height: @size * 0.25,
+      color: '#4A4A4A',
+      z: base_z + 4
+    )
+    @shapes[:sword_blade] = Rectangle.new(
+      x: @x + @size * 0.33,
+      y: @y - @size * 0.3,
+      width: @size * 0.05,
+      height: @size * 0.4,
+      color: '#E0E0E0',
+      z: base_z + 5
+    )
+
+    # Ноги
+    @shapes[:leg_left] = Rectangle.new(
+      x: @x - @size * 0.18,
+      y: @y + @size * 0.4,
+      width: @size * 0.18,
+      height: @size * 0.3,
+      color: '#F0F0F0',
+      z: base_z + 1
+    )
+    @shapes[:leg_right] = Rectangle.new(
+      x: @x,
+      y: @y + @size * 0.4,
+      width: @size * 0.18,
+      height: @size * 0.3,
+      color: '#F0F0F0',
+      z: base_z + 1
+    )
+  end
+
+  def create_vampire_hunter_shapes
+    # Z-индекс для игрока
+    base_z = 600
+    # Голова (с широкополой шляпой)
+    @shapes[:head] = Circle.new(
+      x: @x,
+      y: @y - @size * 0.2,
+      radius: @size * 0.18,
+      color: '#F5DEB3',
+      z: base_z + 5
+    )
+    # Шляпа
+    @shapes[:hat_brim] = Rectangle.new(
+      x: @x - @size * 0.3,
+      y: @y - @size * 0.25,
+      width: @size * 0.6,
+      height: @size * 0.08,
+      color: '#2F2F2F',
+      z: base_z + 4
+    )
+    @shapes[:hat_top] = Rectangle.new(
+      x: @x - @size * 0.15,
+      y: @y - @size * 0.4,
+      width: @size * 0.3,
+      height: @size * 0.2,
+      color: '#1A1A1A',
+      z: base_z + 4
+    )
+
+    # Тело (темный плащ)
+    @shapes[:body] = Rectangle.new(
+      x: @x - @size * 0.2,
+      y: @y - @size * 0.05,
+      width: @size * 0.4,
+      height: @size * 0.5,
+      color: '#1A1A1A',
+      z: base_z + 1
+    )
+
+    # Руки с арбалетом
+    @shapes[:arm_left] = Rectangle.new(
+      x: @x - @size * 0.32,
+      y: @y,
+      width: @size * 0.1,
+      height: @size * 0.4,
+      color: '#F5DEB3',
+      z: base_z + 3
+    )
+    @shapes[:arm_right] = Rectangle.new(
+      x: @x + @size * 0.22,
+      y: @y - @size * 0.05,
+      width: @size * 0.1,
+      height: @size * 0.4,
+      color: '#F5DEB3',
+      z: base_z + 3
+    )
+
+    # Арбалет
+    @shapes[:crossbow] = Rectangle.new(
+      x: @x - @size * 0.15,
+      y: @y + @size * 0.1,
+      width: @size * 0.5,
+      height: @size * 0.15,
+      color: '#654321',
+      z: base_z + 4
+    )
+    @shapes[:crossbow_string] = Line.new(
+      x1: @x - @size * 0.15, y1: @y + @size * 0.175,
+      x2: @x + @size * 0.35, y2: @y + @size * 0.175,
+      width: 2,
+      color: '#C0C0C0',
+      z: base_z + 5
+    )
+
+    # Ноги
+    @shapes[:leg_left] = Rectangle.new(
+      x: @x - @size * 0.15,
+      y: @y + @size * 0.4,
+      width: @size * 0.12,
+      height: @size * 0.3,
+      color: '#2F2F2F',
+      z: base_z + 1
+    )
+    @shapes[:leg_right] = Rectangle.new(
+      x: @x + @size * 0.03,
+      y: @y + @size * 0.4,
+      width: @size * 0.12,
+      height: @size * 0.3,
+      color: '#2F2F2F',
+      z: base_z + 1
+    )
+  end
+
   def create_monster_shapes
     # Определяем тип монстра (случайный при создании)
     @monster_type = [:goblin, :skeleton, :zombie].sample
