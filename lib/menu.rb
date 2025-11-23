@@ -14,13 +14,13 @@ class Menu
 
   def initialize_shapes
     # Заголовок игры
+    # Не указываем font вообще - Ruby2D использует встроенный шрифт
     @title_text = Text.new(
       'VAMPIRE SURVIVAL',
       x: @window_width / 2,
       y: @window_height / 4,
       size: 60,
-      color: 'red',
-      font: nil
+      color: 'red'
     )
     @title_text.x = @window_width / 2 - @title_text.width / 2
 
@@ -30,8 +30,7 @@ class Menu
       x: @window_width / 2,
       y: @window_height / 4 + 70,
       size: 30,
-      color: 'white',
-      font: nil
+      color: 'white'
     )
     @subtitle_text.x = @window_width / 2 - @subtitle_text.width / 2
 
@@ -46,8 +45,7 @@ class Menu
         x: @window_width / 2,
         y: y_pos,
         size: 40,
-        color: 'white',
-        font: nil
+        color: 'white'
       )
       @texts[item].x = @window_width / 2 - @texts[item].width / 2
     end
@@ -67,8 +65,7 @@ class Menu
         x: @window_width / 2,
         y: @window_height / 4 + 120,
         size: 18,
-        color: '#FFD700',
-        font: nil
+        color: '#FFD700'
       )
       @high_score_text.x = @window_width / 2 - @high_score_text.width / 2
       
@@ -77,8 +74,7 @@ class Menu
         x: @window_width / 2,
         y: @window_height / 4 + 145,
         size: 14,
-        color: '#AAAAAA',
-        font: nil
+        color: '#AAAAAA'
       )
       @date_text.x = @window_width / 2 - @date_text.width / 2
     else
@@ -87,8 +83,7 @@ class Menu
         x: @window_width / 2,
         y: @window_height / 4 + 120,
         size: 18,
-        color: '#888888',
-        font: nil
+        color: '#888888'
       )
       @high_score_text.x = @window_width / 2 - @high_score_text.width / 2
       @date_text = nil
