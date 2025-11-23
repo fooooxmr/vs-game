@@ -306,15 +306,31 @@ class Enemy
           predicted_x = player.x + player_dx * 1.8
           predicted_y = player.y + player_dy * 1.8
           
-          return {
-            type: :boss_ranged_attack,
-            damage: @damage * 1.5,  # Дальняя атака сильнее
-            radius: 80,
-            delay: 4.0,  # Задержка перед ударом (увеличено с 1.5 до 4.0 - в 2.67 раза)
-            x: predicted_x,
-            y: predicted_y,
-            enemy: self
-          }
+          # Создаем несколько атак за раз (2-3 рядом)
+          attacks = []
+          attack_count = rand(2..3)  # 2-3 атаки за раз
+          
+          attack_count.times do |i|
+            # Смещаем позицию для каждой атаки
+            offset_angle = (i - attack_count / 2.0) * 0.4  # Разброс по углу
+            offset_distance = i * 40  # Расстояние между атаками
+            
+            attack_x = predicted_x + Math.cos(offset_angle) * offset_distance
+            attack_y = predicted_y + Math.sin(offset_angle) * offset_distance
+            
+            attacks << {
+              type: :boss_ranged_attack,
+              damage: @damage * 1.5,
+              radius: 70,
+              delay: 2.5,  # Уменьшено с 4.0 до 2.5 (быстрее каст)
+              x: attack_x,
+              y: attack_y,
+              enemy: self
+            }
+          end
+          
+          # Возвращаем первую атаку с массивом всех атак
+          return attacks.first.merge(attacks: attacks)
         end
       end
     end

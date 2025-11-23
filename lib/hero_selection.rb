@@ -642,6 +642,12 @@ class HeroSelection
       :mage
     when :rogue
       :rogue
+    when :berserker
+      :knight  # Используем спрайт рыцаря для берсерка
+    when :paladin
+      :knight  # Используем спрайт рыцаря для паладина
+    when :vampire_hunter
+      :rogue  # Используем спрайт разбойника для охотника на вампиров
     else
       :player
     end
@@ -1398,10 +1404,15 @@ class HeroSelection
     @texts.reject! { |k, _| k.to_s.start_with?('hero_') }
 
     # Создаем карточки героев
+    # Уменьшаем размер карточек и расстояние между ними, чтобы все влазили
+    card_spacing = 280  # Уменьшено с 350
+    total_width = (@heroes.length - 1) * card_spacing
+    start_x = @window_width / 2 - total_width / 2
+    
     @heroes.each_with_index do |hero_key, index|
       hero_data = HEROES[hero_key]
-      card_x = @window_width / 2 - 450 + index * 350
-      card_y = @window_height / 2 - 120
+      card_x = start_x + index * card_spacing
+      card_y = @window_height / 2 - 100  # Немного выше
       selected = index == @selected_index
 
       create_hero_card(hero_key, hero_data, card_x, card_y, index, selected)
@@ -1409,8 +1420,8 @@ class HeroSelection
   end
 
   def create_hero_card(hero_key, hero_data, x, y, index, selected)
-    card_width = 320
-    card_height = 420
+    card_width = 260  # Уменьшено с 320
+    card_height = 380  # Уменьшено с 420
 
     # Внешняя рамка с эффектом свечения
     if selected

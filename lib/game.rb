@@ -465,13 +465,28 @@ class Game
           case attack_result[:type]
           when :boss_ranged_attack
             # Создаем индикацию дальней атаки босса
-            create_boss_ranged_attack_indicator(
-              attack_result[:x], 
-              attack_result[:y], 
-              attack_result[:radius], 
-              attack_result[:delay], 
-              attack_result[:damage]
-            )
+            # Может быть несколько атак за раз
+            if attack_result[:attacks] && attack_result[:attacks].is_a?(Array)
+              # Создаем несколько атак
+              attack_result[:attacks].each do |attack|
+                create_boss_ranged_attack_indicator(
+                  attack[:x], 
+                  attack[:y], 
+                  attack[:radius], 
+                  attack[:delay], 
+                  attack[:damage]
+                )
+              end
+            else
+              # Одна атака (старый формат)
+              create_boss_ranged_attack_indicator(
+                attack_result[:x], 
+                attack_result[:y], 
+                attack_result[:radius], 
+                attack_result[:delay], 
+                attack_result[:damage]
+              )
+            end
             # Обновляем время последней атаки врага
             enemy.instance_variable_set(:@last_attack_time, Time.now.to_f)
           end
@@ -2898,11 +2913,15 @@ class Game
         # Обновляем врага с минимальным delta_time, чтобы он не "прыгнул"
         enemy.update(0.016, @player, @map) # ~60 FPS
       end
-      # Обновляем спрайт врага
+      # Обновляем спрайт врага (особенно важно для боссов)
       if enemy.sprite && @camera
         screen_x, screen_y = @camera.world_to_screen(enemy.x, enemy.y)
         enemy.sprite.x = screen_x
         enemy.sprite.y = screen_y
+        # Обновляем анимацию спрайта
+        enemy.sprite.update(0.016, enemy.instance_variable_get(:@is_moving) || false, 
+                           enemy.instance_variable_get(:@is_attacking) || false, 
+                           enemy.instance_variable_get(:@took_damage) || false) if enemy.sprite.respond_to?(:update)
         enemy.sprite.update_all_positions if enemy.sprite.respond_to?(:update_all_positions)
       end
     end
