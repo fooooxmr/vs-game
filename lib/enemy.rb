@@ -688,6 +688,7 @@ class Enemy
     return unless @sprite # Не рисуем, если спрайт не создан
 
     # Обновляем позицию спрайта с учетом камеры
+    # ВАЖНО: Для боссов особенно важно правильно обновлять позицию
     if camera
       screen_x, screen_y = camera.world_to_screen(@x, @y)
       @sprite.x = screen_x
@@ -698,7 +699,10 @@ class Enemy
     end
     
     # ВАЖНО: Обновляем позиции всех фигур спрайта с учетом экранных координат
-    @sprite.update_all_positions if @sprite.respond_to?(:update_all_positions)
+    # Это особенно важно для боссов, у которых много фигур
+    if @sprite.respond_to?(:update_all_positions)
+      @sprite.update_all_positions
+    end
 
     # Спрайт рисуется автоматически через Ruby2D
     # Рисуем полоску здоровья (с учетом камеры)

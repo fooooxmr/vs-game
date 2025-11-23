@@ -2932,15 +2932,12 @@ class Game
         enemy.update(0.016, @player, @map) # ~60 FPS
       end
       # Обновляем спрайт врага (особенно важно для боссов)
-      if enemy.sprite && @camera
-        screen_x, screen_y = @camera.world_to_screen(enemy.x, enemy.y)
-        enemy.sprite.x = screen_x
-        enemy.sprite.y = screen_y
+      # Позиция будет обновлена в draw, здесь только обновляем анимацию
+      if enemy.sprite
         # Обновляем анимацию спрайта
         enemy.sprite.update(0.016, enemy.instance_variable_get(:@is_moving) || false, 
                            enemy.instance_variable_get(:@is_attacking) || false, 
                            enemy.instance_variable_get(:@took_damage) || false) if enemy.sprite.respond_to?(:update)
-        enemy.sprite.update_all_positions if enemy.sprite.respond_to?(:update_all_positions)
       end
     end
   end
