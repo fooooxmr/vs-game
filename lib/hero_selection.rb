@@ -40,6 +40,45 @@ class HeroSelection
       },
       starting_weapon: :knife,
       sprite_type: :rogue
+    },
+    berserker: {
+      name: "Берсерк",
+      icon: "🪓",
+      description: "Свирепый воин с мощными атаками и высокой выносливостью",
+      stats: {
+        health: 140,
+        speed: 95,
+        damage: 18,
+        armor: 0.08
+      },
+      starting_weapon: :axe,
+      sprite_type: :knight
+    },
+    paladin: {
+      name: "Паладин",
+      icon: "✝️",
+      description: "Святой воин с защитными силами и орбитальным оружием",
+      stats: {
+        health: 130,
+        speed: 105,
+        damage: 14,
+        armor: 0.12
+      },
+      starting_weapon: :cross,
+      sprite_type: :knight
+    },
+    vampire_hunter: {
+      name: "Охотник на вампиров",
+      icon: "🧄",
+      description: "Специалист по защите от нежити с облачными атаками",
+      stats: {
+        health: 100,
+        speed: 115,
+        damage: 10,
+        armor: 0.06
+      },
+      starting_weapon: :garlic,
+      sprite_type: :rogue
     }
   }.freeze
 

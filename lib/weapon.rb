@@ -126,26 +126,72 @@ class Weapon
     @area = @base_area
     @duration = @base_duration
     
-    # Улучшения от уровня оружия - заметные, но сбалансированные
-    # Урон: +5% за уровень (увеличено с 3%)
+    # Улучшения от уровня оружия - каждый тип оружия имеет свои приоритеты
+    # Урон: +5% за уровень (базовое улучшение для всех)
     damage_bonus = 1.0 + (@level * 0.05)
     @damage = (@base_damage * damage_bonus).round
     
-    # Кулдаун: -3% за уровень (увеличено с 2%, минимум 0.5 от базового)
+    # Кулдаун: -3% за уровень (базовое улучшение)
     cooldown_reduction = @level * 0.03
     @cooldown = [@base_cooldown * (1.0 - cooldown_reduction), @base_cooldown * 0.5].max
     
-    # Дальность: +12% за уровень (увеличено с 3% до 12%, максимум +100%)
-    range_bonus = 1.0 + (@level * 0.12)
-    @range = (@base_range * [range_bonus, 2.0].min).round
-    
-    # Количество снарядов: увеличивается с уровнем для magic_wand и knife
-    if @type == :magic_wand || @type == :knife
-      # Увеличиваем на 12% за каждый уровень (увеличено с фиксированного +0.5)
-      amount_bonus = 1.0 + (@level * 0.12)
+    # Специфичные улучшения для каждого типа оружия
+    case @type
+    when :whip
+      # Кнут: важна дальность и скорость (кулдаун)
+      # Дальность: +15% за уровень (приоритет)
+      range_bonus = 1.0 + (@level * 0.15)
+      @range = (@base_range * [range_bonus, 2.5].min).round
+      # Дополнительное снижение кулдауна: -2% за уровень
+      extra_cooldown_reduction = @level * 0.02
+      @cooldown = [@cooldown * (1.0 - extra_cooldown_reduction), @base_cooldown * 0.4].max
+      
+    when :magic_wand
+      # Магическая палочка: важны количество и дальность
+      # Количество: +15% за уровень (приоритет)
+      amount_bonus = 1.0 + (@level * 0.15)
       @amount = (@base_amount * amount_bonus).round
-      # Максимум 15 снарядов (увеличено с 8)
-      @amount = [@amount, 15].min
+      @amount = [@amount, 20].min  # Максимум 20 снарядов
+      # Дальность: +10% за уровень
+      range_bonus = 1.0 + (@level * 0.10)
+      @range = (@base_range * [range_bonus, 2.0].min).round
+      
+    when :knife
+      # Нож: важны количество и скорость (кулдаун)
+      # Количество: +15% за уровень (приоритет)
+      amount_bonus = 1.0 + (@level * 0.15)
+      @amount = (@base_amount * amount_bonus).round
+      @amount = [@amount, 20].min  # Максимум 20 снарядов
+      # Дополнительное снижение кулдауна: -2% за уровень
+      extra_cooldown_reduction = @level * 0.02
+      @cooldown = [@cooldown * (1.0 - extra_cooldown_reduction), @base_cooldown * 0.4].max
+      
+    when :axe
+      # Топор: важны дальность и урон
+      # Дальность: +15% за уровень (приоритет)
+      range_bonus = 1.0 + (@level * 0.15)
+      @range = (@base_range * [range_bonus, 2.5].min).round
+      # Дополнительный урон: +3% за уровень
+      extra_damage_bonus = 1.0 + (@level * 0.03)
+      @damage = (@damage * extra_damage_bonus).round
+      
+    when :cross
+      # Крест: важна длительность (орбитальное оружие)
+      # Длительность: +20% за уровень (приоритет)
+      duration_bonus = 1.0 + (@level * 0.20)
+      @duration = @base_duration * [duration_bonus, 3.0].min
+      # Дополнительная дальность: +8% за уровень
+      range_bonus = 1.0 + (@level * 0.08)
+      @range = (@base_range * [range_bonus, 1.8].min).round
+      
+    when :garlic
+      # Чеснок: важны область и скорость (кулдаун)
+      # Область: +18% за уровень (приоритет)
+      area_bonus = 1.0 + (@level * 0.18)
+      @area = @base_area * [area_bonus, 3.0].min
+      # Дополнительное снижение кулдауна: -3% за уровень
+      extra_cooldown_reduction = @level * 0.03
+      @cooldown = [@cooldown * (1.0 - extra_cooldown_reduction), @base_cooldown * 0.3].max
     end
     
     # НЕ обновляем базовые значения! Они должны оставаться постоянными
