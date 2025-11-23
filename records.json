@@ -41,6 +41,16 @@
   },
   {
     "enemies_killed": 36,
+    "time_alive": 161,
+    "level": 8,
+    "gold": 25,
+    "weapons_count": 2,
+    "passives_count": 5,
+    "date": "2025-11-23 21:32:15",
+    "completed": false
+  },
+  {
+    "enemies_killed": 36,
     "time_alive": 149,
     "level": 8,
     "gold": 100,
@@ -51,22 +61,22 @@
   },
   {
     "enemies_killed": 33,
-    "time_alive": 39,
-    "level": 3,
-    "gold": 38,
-    "weapons_count": 1,
-    "passives_count": 1,
-    "date": "2025-11-23 17:17:30",
-    "completed": false
-  },
-  {
-    "enemies_killed": 33,
     "time_alive": 188,
     "level": 12,
     "gold": 115,
     "weapons_count": 1,
     "passives_count": 3,
     "date": "2025-11-23 19:24:15",
+    "completed": false
+  },
+  {
+    "enemies_killed": 33,
+    "time_alive": 39,
+    "level": 3,
+    "gold": 38,
+    "weapons_count": 1,
+    "passives_count": 1,
+    "date": "2025-11-23 17:17:30",
     "completed": false
   },
   {
@@ -87,16 +97,6 @@
     "weapons_count": 2,
     "passives_count": 3,
     "date": "2025-11-23 20:49:57",
-    "completed": false
-  },
-  {
-    "enemies_killed": 24,
-    "time_alive": 40,
-    "level": 2,
-    "gold": 3,
-    "weapons_count": 1,
-    "passives_count": 1,
-    "date": "2025-11-23 17:08:42",
     "completed": false
   }
 ]
