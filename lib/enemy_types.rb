@@ -87,17 +87,17 @@ module EnemyTypes
       ranged: true # Дальнобойный враг
     },
     
-    # Элитные мобы (вызываются через алтари)
+    # Элитные мобы (вызываются через алтари) - ОСЛАБЛЕНЫ в 3-4 раза
     elite_knight: {
       name: "Элитный рыцарь",
-      health: 300,
-      speed: 60,
-      damage: 25,
-      attack_range: 30,  # Уменьшено - ближний бой, как у обычных мобов
-      attack_cooldown: 1.5,
-      experience: 30,
+      health: 75,  # Было 300, уменьшено в 4 раза
+      speed: 50,   # Было 60, уменьшено
+      damage: 7,   # Было 25, уменьшено в ~3.5 раза
+      attack_range: 30,
+      attack_cooldown: 2.5,  # Было 1.5, увеличено для меньшей частоты атак
+      experience: 10,  # Было 30, уменьшено в 3 раза
       gold_chance: 1.0,
-      gold_amount: (20..40),
+      gold_amount: (8..15),  # Было 20..40, уменьшено в ~2.5 раза
       spawn_time: -1, # Только через алтари
       sprite_type: :enemy,
       elite: true,
@@ -106,14 +106,14 @@ module EnemyTypes
     },
     elite_mage: {
       name: "Элитный маг",
-      health: 250,
-      speed: 55,
-      damage: 30,
+      health: 65,  # Было 250, уменьшено в ~3.8 раза
+      speed: 45,   # Было 55, уменьшено
+      damage: 8,   # Было 30, уменьшено в ~3.75 раза
       attack_range: 200,
-      attack_cooldown: 1.8,
-      experience: 35,
+      attack_cooldown: 4.0,  # Было 1.8, увеличено для меньшей частоты дальних атак
+      experience: 12,  # Было 35, уменьшено в ~3 раза
       gold_chance: 1.0,
-      gold_amount: (25..50),
+      gold_amount: (10..18),  # Было 25..50, уменьшено в ~2.5 раза
       spawn_time: -1,
       sprite_type: :enemy,
       elite: true,

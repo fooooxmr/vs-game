@@ -499,13 +499,28 @@ class Game
             case attack_result[:type]
             when :elite_ranged_attack
               # Создаем индикацию дальней атаки элитного мага
-              create_elite_ranged_attack_indicator(
-                attack_result[:x], 
-                attack_result[:y], 
-                attack_result[:radius], 
-                attack_result[:delay], 
-                attack_result[:damage]
-              )
+              # Может быть несколько атак за раз
+              if attack_result[:attacks] && attack_result[:attacks].is_a?(Array)
+                # Создаем несколько атак
+                attack_result[:attacks].each do |attack|
+                  create_elite_ranged_attack_indicator(
+                    attack[:x], 
+                    attack[:y], 
+                    attack[:radius], 
+                    attack[:delay], 
+                    attack[:damage]
+                  )
+                end
+              else
+                # Одна атака (старый формат)
+                create_elite_ranged_attack_indicator(
+                  attack_result[:x], 
+                  attack_result[:y], 
+                  attack_result[:radius], 
+                  attack_result[:delay], 
+                  attack_result[:damage]
+                )
+              end
               # Обновляем время последней атаки врага
               enemy.instance_variable_set(:@last_attack_time, Time.now.to_f)
             when :elite_melee_attack

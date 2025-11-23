@@ -336,15 +336,31 @@ class Enemy
         predicted_y = player.y + player_dy * prediction_factor
         
         # Возвращаем информацию для создания индикации
-        return {
-          type: :elite_ranged_attack,
-          damage: @damage,
-          radius: 40,  # Увеличено в 2 раза (было 20)
-          delay: 3.0,  # Увеличена задержка для возможности уклонения (было 2.5)
-          x: predicted_x,  # Предсказанная позиция, а не текущая
-          y: predicted_y,
-          enemy: self
-        }
+        # Может быть несколько атак за раз (2-3 рядом или по направлению)
+        attacks = []
+        attack_count = rand(2..3)  # 2-3 атаки за раз
+        
+        attack_count.times do |i|
+          # Смещаем позицию для каждой атаки
+          offset_angle = (i - attack_count / 2.0) * 0.3  # Разброс по углу
+          offset_distance = i * 30  # Расстояние между атаками
+          
+          attack_x = predicted_x + Math.cos(offset_angle) * offset_distance
+          attack_y = predicted_y + Math.sin(offset_angle) * offset_distance
+          
+          attacks << {
+            type: :elite_ranged_attack,
+            damage: @damage,
+            radius: 35,  # Немного уменьшено
+            delay: 3.5,  # Увеличена задержка для возможности уклонения
+            x: attack_x,
+            y: attack_y,
+            enemy: self
+          }
+        end
+        
+        # Возвращаем первую атаку (остальные будут созданы в game.rb)
+        return attacks.first.merge(attacks: attacks)  # Передаем все атаки
       else
         # Ближняя атака элитного рыцаря - создаем индикацию вокруг врага
         return {

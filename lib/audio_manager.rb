@@ -174,10 +174,6 @@ class AudioManager
       puts "   #{e.backtrace.first}" if ENV['DEBUG']
     end
   end
-    # Выводим ошибки воспроизведения звука для отладки
-    puts "❌ Ошибка воспроизведения звука #{sound_name}: #{e.message}"
-    puts "   #{e.backtrace.first}" if ENV['DEBUG']
-  end
 
   def play_music
     return unless @music
