@@ -135,17 +135,17 @@ class Weapon
     cooldown_reduction = @level * 0.03
     @cooldown = [@base_cooldown * (1.0 - cooldown_reduction), @base_cooldown * 0.5].max
     
-    # Дальность: +3% за уровень (увеличено с 2%, максимум +25%)
-    range_bonus = 1.0 + (@level * 0.03)
-    @range = (@base_range * [range_bonus, 1.25].min).round
+    # Дальность: +12% за уровень (увеличено с 3% до 12%, максимум +100%)
+    range_bonus = 1.0 + (@level * 0.12)
+    @range = (@base_range * [range_bonus, 2.0].min).round
     
     # Количество снарядов: увеличивается с уровнем для magic_wand и knife
     if @type == :magic_wand || @type == :knife
-      # Увеличиваем на 0.5 за каждый уровень (начиная с уровня 2)
-      level_bonus = [(@level - 1) * 0.5, 0].max
-      @amount = (@base_amount + level_bonus).round
-      # Максимум 8 снарядов (увеличено с 5)
-      @amount = [@amount, 8].min
+      # Увеличиваем на 12% за каждый уровень (увеличено с фиксированного +0.5)
+      amount_bonus = 1.0 + (@level * 0.12)
+      @amount = (@base_amount * amount_bonus).round
+      # Максимум 15 снарядов (увеличено с 8)
+      @amount = [@amount, 15].min
     end
     
     # НЕ обновляем базовые значения! Они должны оставаться постоянными
