@@ -8,6 +8,7 @@ class AudioManager
     @sounds = {}
     @music = nil
     @sound_enabled = true
+    puts "🔊 Инициализация AudioManager (SFX: #{@sfx_volume}%, Music: #{@music_volume}%)"
     load_sounds
   end
 
@@ -34,11 +35,14 @@ class AudioManager
         begin
           @sounds[key] = Sound.new(path)
           loaded_count += 1
+          puts "  ✓ #{key}: #{path}" if ENV['DEBUG']
         rescue => e
-          puts "Не удалось загрузить звук #{path}: #{e.message}"
+          puts "  ❌ Не удалось загрузить звук #{path}: #{e.message}"
+          puts "     #{e.backtrace.first}" if ENV['DEBUG']
           @sounds[key] = nil
         end
       else
+        puts "  ⚠️  Файл не найден: #{path}" if ENV['DEBUG']
         @sounds[key] = nil
       end
     end
@@ -47,7 +51,10 @@ class AudioManager
       puts "⚠️  ВНИМАНИЕ: Звуковые файлы не найдены в папке sounds/"
       puts "   Скачайте звуки согласно инструкции в sounds/README.md"
     else
-      puts "✓ Загружено звуков: #{loaded_count}/#{sound_files.size}" if ENV['DEBUG']
+      puts "✓ Загружено звуков: #{loaded_count}/#{sound_files.size}"
+      # Выводим список загруженных звуков для отладки
+      loaded_sounds = @sounds.select { |k, v| v != nil }.keys
+      puts "   Загруженные звуки: #{loaded_sounds.join(', ')}"
     end
     
     # Загружаем фоновую музыку (если есть)
@@ -72,7 +79,7 @@ class AudioManager
     return unless @sound_enabled
     
     unless @sounds[sound_name]
-      puts "Звук #{sound_name} не загружен (файл не найден или ошибка загрузки)" if ENV['DEBUG']
+      puts "⚠️  Звук #{sound_name} не загружен (файл не найден или ошибка загрузки)"
       return
     end
     
@@ -80,16 +87,20 @@ class AudioManager
     volume = volume_override || @sfx_volume
     sound.volume = volume / 100.0
     sound.play
+    puts "🔊 Воспроизведен звук: #{sound_name} (громкость: #{volume}%)" if ENV['DEBUG']
   rescue => e
     # Выводим ошибки воспроизведения звука для отладки
-    puts "Ошибка воспроизведения звука #{sound_name}: #{e.message}" if ENV['DEBUG']
+    puts "❌ Ошибка воспроизведения звука #{sound_name}: #{e.message}"
+    puts "   #{e.backtrace.first}" if ENV['DEBUG']
   end
 
   def play_music
     return unless @music
     @music.play
+    puts "🎵 Фоновая музыка запущена (громкость: #{@music_volume}%)"
   rescue => e
-    puts "Ошибка воспроизведения музыки: #{e.message}" if ENV['DEBUG']
+    puts "❌ Ошибка воспроизведения музыки: #{e.message}"
+    puts "   #{e.backtrace.first}" if ENV['DEBUG']
   end
 
   def stop_music
