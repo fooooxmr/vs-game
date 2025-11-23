@@ -551,15 +551,29 @@ class Enemy
           return attacks.first.merge(attacks: attacks)
         when 4
           # Паттерн 5: Огромный взрыв вокруг босса
-          return {
-            type: :final_boss_explosion,
-            damage: @damage * 1.5,
-            radius: 200,
-            delay: 18.0,  # Увеличено с 15.0 до 18.0 (еще в 1.2 раза)
-            x: @x,
-            y: @y,
-            enemy: self
-          }
+          # Создаем несколько взрывов за раз (2)
+          attacks = []
+          attack_count = 2
+          
+          attack_count.times do |i|
+            offset_angle = (i - attack_count / 2.0) * 0.8
+            offset_distance = i * 120
+            
+            attack_x = @x + Math.cos(offset_angle) * offset_distance
+            attack_y = @y + Math.sin(offset_angle) * offset_distance
+            
+            attacks << {
+              type: :final_boss_explosion,
+              damage: @damage * 1.5,
+              radius: 200,
+              delay: 6.0,  # Уменьшено с 18.0 до 6.0 (в 3 раза быстрее)
+              center_x: attack_x,
+              center_y: attack_y,
+              enemy: self
+            }
+          end
+          
+          return attacks.first.merge(attacks: attacks)
         end
       else
         # Обычный босс - простые паттерны
