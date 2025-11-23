@@ -293,7 +293,10 @@ class Game
     @projectiles.each do |projectile|
       next unless projectile.active
       
-      projectile.update(delta_time, @alive_enemies_cache, @map)
+      # Передаем позицию игрока для креста
+      player_x = @player.x
+      player_y = @player.y
+      projectile.update(delta_time, @alive_enemies_cache, @map, player_x, player_y)
       
       # ВАЖНО: Обновляем позиции фигур после обновления логики
       if projectile.respond_to?(:update_positions)

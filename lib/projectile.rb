@@ -1,5 +1,5 @@
 class Projectile
-  attr_accessor :x, :y, :angle, :speed, :damage, :range, :traveled_distance, :type, :active, :last_damage_dealt
+  attr_accessor :x, :y, :angle, :speed, :damage, :range, :traveled_distance, :type, :active, :last_damage_dealt, :player_x, :player_y, :duration
 
   def initialize(type, x, y, angle, damage, speed = 0, range = 100, options = {})
     @type = type
@@ -18,6 +18,10 @@ class Projectile
     @time_alive = 0
     @shape_offsets = [] # Смещения фигур от центра проектиля
     @last_damage_dealt = 0 # Урон, нанесенный этим проектилем (для вампиризма)
+    @player_x = options[:player_x] || x # Позиция игрока для креста
+    @player_y = options[:player_y] || y
+    @duration = options[:duration] || 1.0 # Длительность для креста
+    @initial_angle = options[:initial_angle] || 0 # Начальный угол для креста
     create_shapes
   end
 
@@ -66,19 +70,27 @@ class Projectile
       )
       @shape_offsets << { x: 0, y: 0 }
     when :garlic
+      # Увеличиваем ауру в 2 раза
+      area = (@options[:area] || 50) * 2
       @shapes << Circle.new(
         x: @x, y: @y,
-        radius: @options[:area] || 50,
+        radius: area,
         color: [139, 69, 19, 0.3] # Полупрозрачный коричневый
       )
       @shape_offsets << { x: 0, y: 0 }
     end
   end
 
-  def update(delta_time, enemies = [], map = nil)
+  def update(delta_time, enemies = [], map = nil, player_x = nil, player_y = nil)
     return unless @active
 
     @time_alive += delta_time
+    
+    # Обновляем позицию игрока для креста
+    if @type == :cross && player_x && player_y
+      @player_x = player_x
+      @player_y = player_y
+    end
 
     case @type
     when :whip
@@ -91,10 +103,17 @@ class Projectile
       update_garlic(enemies, delta_time)
     end
 
-    # Проверяем дальность
-    distance = Math.sqrt((@x - @start_x)**2 + (@y - @start_y)**2)
-    if distance >= @range
-      @active = false
+    # Для креста проверяем длительность
+    if @type == :cross
+      if @time_alive >= @duration
+        @active = false
+      end
+    else
+      # Для остальных проверяем дальность
+      distance = Math.sqrt((@x - @start_x)**2 + (@y - @start_y)**2)
+      if distance >= @range
+        @active = false
+      end
     end
   end
 
@@ -150,22 +169,15 @@ class Projectile
   end
 
   def update_cross(delta_time, map = nil)
-    # Крест вращается вокруг начальной позиции
-    radius = 50
-    new_x = @start_x + Math.cos(@time_alive * 2) * radius
-    new_y = @start_y + Math.sin(@time_alive * 2) * radius
+    # Крест вращается вокруг игрока
+    radius = @range || 50
+    # Используем начальный угол и время для вращения
+    angle = @initial_angle + @time_alive * 2
+    new_x = @player_x + Math.cos(angle) * radius
+    new_y = @player_y + Math.sin(angle) * radius
     
-    # Проверяем коллизии с картой (для креста это менее критично, но проверим)
-    if map
-      collisions = map.get_collisions(new_x, new_y, 10)
-      solid_collision = collisions.find { |obj| obj.solid }
-      
-      if solid_collision
-        # Крест столкнулся с непроходимым объектом - деактивируем
-        @active = false
-        return
-      end
-    end
+    # Проверяем коллизии с врагами для нанесения урона
+    # (коллизии с картой для креста не критичны)
     
     @x = new_x
     @y = new_y
@@ -174,12 +186,14 @@ class Projectile
 
   def update_garlic(enemies, delta_time)
     # Чеснок наносит урон всем врагам в радиусе
-    area = @options[:area] || 50
+    # Аура увеличена в 2 раза (уже применено в create_shapes)
+    area = (@options[:area] || 50) * 2
     @garlic_damage_timer ||= 0
     @garlic_damage_timer += delta_time
     
-    # Наносим урон раз в 0.1 секунды
-    if @garlic_damage_timer >= 0.1
+    # Наносим урон раз в 0.5 секунды (раз в N)
+    damage_interval = 0.5
+    if @garlic_damage_timer >= damage_interval
       enemies.each do |enemy|
         next unless enemy.alive?
         distance = Math.sqrt((enemy.x - @x)**2 + (enemy.y - @y)**2)
@@ -188,6 +202,13 @@ class Projectile
         end
       end
       @garlic_damage_timer = 0
+    end
+    
+    # Скрываем отрисовку если проектиль неактивен
+    if !@active && @shapes.any?
+      @shapes.each do |shape|
+        shape.opacity = 0 if shape.respond_to?(:opacity=)
+      end
     end
   end
 
@@ -222,13 +243,19 @@ class Projectile
     @shapes.each_with_index do |shape, index|
       case shape
       when Circle
-        if @shape_offsets[index]
-          offset = @shape_offsets[index]
-          shape.x = screen_x + offset[:x]
-          shape.y = screen_y + offset[:y]
+        if @type == :garlic && !@active
+          # Скрываем ауру чеснока если неактивен
+          shape.opacity = 0 if shape.respond_to?(:opacity=)
         else
-          shape.x = screen_x
-          shape.y = screen_y
+          if @shape_offsets[index]
+            offset = @shape_offsets[index]
+            shape.x = screen_x + offset[:x]
+            shape.y = screen_y + offset[:y]
+          else
+            shape.x = screen_x
+            shape.y = screen_y
+          end
+          shape.opacity = 1.0 if shape.respond_to?(:opacity=)
         end
       when Rectangle
         if @shape_offsets[index]

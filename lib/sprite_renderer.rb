@@ -49,6 +49,21 @@ class SpriteRenderer
       @animations[:walk] = Animation.new([0, 1, 2, 1], 0.1, true)
       @animations[:attack] = Animation.new([0, 1, 2, 0], 0.06, false)
       @animations[:damage] = Animation.new([0], 0.2, false)
+    when :berserker
+      @animations[:idle] = Animation.new([0, 1], 0.5, true)
+      @animations[:walk] = Animation.new([0, 1, 2, 1], 0.1, true)
+      @animations[:attack] = Animation.new([0, 1, 2, 3, 4, 0], 0.07, false)
+      @animations[:damage] = Animation.new([0], 0.2, false)
+    when :paladin
+      @animations[:idle] = Animation.new([0, 1], 0.6, true)
+      @animations[:walk] = Animation.new([0, 1, 2, 1], 0.13, true)
+      @animations[:attack] = Animation.new([0, 1, 2, 3, 0], 0.09, false)
+      @animations[:damage] = Animation.new([0], 0.2, false)
+    when :vampire_hunter
+      @animations[:idle] = Animation.new([0, 1], 0.5, true)
+      @animations[:walk] = Animation.new([0, 1, 2, 1], 0.11, true)
+      @animations[:attack] = Animation.new([0, 1, 2, 0], 0.07, false)
+      @animations[:damage] = Animation.new([0], 0.2, false)
     when :skeleton_enemy, :bat_enemy, :ghost_enemy, :zombie_enemy, :knight_enemy, :mage_enemy, :elite_knight_enemy, :elite_mage_enemy, :boss_enemy
       # Разные анимации для разных типов врагов
       case @type
@@ -88,6 +103,15 @@ class SpriteRenderer
       create_slash_effect
     when :rogue
       create_rogue_shapes
+      create_slash_effect
+    when :berserker
+      create_berserker_shapes
+      create_slash_effect
+    when :paladin
+      create_paladin_shapes
+      create_slash_effect
+    when :vampire_hunter
+      create_vampire_hunter_shapes
       create_slash_effect
     when :skeleton_enemy
       create_skeleton_enemy_shapes
