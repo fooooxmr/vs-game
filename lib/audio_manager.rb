@@ -90,11 +90,24 @@ class AudioManager
       return
     end
     
-    sound = @sounds[sound_name]
-    volume = volume_override || @sfx_volume
-    sound.volume = volume / 100.0
-    sound.play
-    puts "🔊 Воспроизведен звук: #{sound_name} (громкость: #{volume}%)" if ENV['DEBUG']
+    begin
+      sound = @sounds[sound_name]
+      volume = volume_override || @sfx_volume
+      
+      # Проверяем, что звук валиден
+      unless sound.respond_to?(:play)
+        puts "❌ Звук #{sound_name} не является валидным объектом Sound"
+        return
+      end
+      
+      sound.volume = volume / 100.0
+      sound.play
+      puts "🔊 Воспроизведен звук: #{sound_name} (громкость: #{volume}%)" if ENV['DEBUG']
+    rescue => e
+      # Выводим ошибки воспроизведения звука для отладки
+      puts "❌ Ошибка воспроизведения звука #{sound_name}: #{e.message}"
+      puts "   #{e.backtrace.first}" if ENV['DEBUG']
+    end
   rescue => e
     # Выводим ошибки воспроизведения звука для отладки
     puts "❌ Ошибка воспроизведения звука #{sound_name}: #{e.message}"
