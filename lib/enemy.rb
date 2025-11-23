@@ -61,7 +61,9 @@ class Enemy
     @special_attacks = @type_data[:special_attacks] || false
     
     # Для специальных атак
-    @special_attack_cooldown = 5.0 # 5 секунд между специальными атаками
+    # Для боссов увеличиваем кулдаун в 3 раза
+    base_cooldown = 5.0
+    @special_attack_cooldown = @boss ? (base_cooldown * 3.0) : base_cooldown # 15 секунд для боссов, 5 для элитов
     @last_special_attack = 0
     @last_contact_damage_time = 0 # Время последнего урона при контакте
     @contact_damage_cooldown = 0.5 # Кулдаун урона при контакте (0.5 секунды)

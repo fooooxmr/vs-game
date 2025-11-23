@@ -52,7 +52,7 @@ class HeroSelection
         armor: 0.08
       },
       starting_weapon: :axe,
-      sprite_type: :knight
+      sprite_type: :berserker
     },
     paladin: {
       name: "Паладин",
@@ -65,7 +65,7 @@ class HeroSelection
         armor: 0.12
       },
       starting_weapon: :cross,
-      sprite_type: :knight
+      sprite_type: :paladin
     },
     vampire_hunter: {
       name: "Охотник на вампиров",
@@ -78,7 +78,7 @@ class HeroSelection
         armor: 0.06
       },
       starting_weapon: :garlic,
-      sprite_type: :rogue
+      sprite_type: :vampire_hunter
     }
   }.freeze
 
@@ -634,23 +634,8 @@ class HeroSelection
     icon_center_y = card_y + 120 # Позиция иконки в карточке
     icon_size = selected ? 50 : 45 # Размер спрайта
     
-    # Определяем тип спрайта
-    sprite_type = case hero_key
-    when :knight
-      :knight
-    when :mage
-      :mage
-    when :rogue
-      :rogue
-    when :berserker
-      :knight  # Используем спрайт рыцаря для берсерка
-    when :paladin
-      :knight  # Используем спрайт рыцаря для паладина
-    when :vampire_hunter
-      :rogue  # Используем спрайт разбойника для охотника на вампиров
-    else
-      :player
-    end
+    # Определяем тип спрайта из hero_data
+    sprite_type = hero_data[:sprite_type] || :player
     
     # Удаляем старый спрайт если есть
     if @hero_sprites[index]
