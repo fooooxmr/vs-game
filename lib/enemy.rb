@@ -433,16 +433,30 @@ class Enemy
           predicted_x = player.x + player_dx * 2.0
           predicted_y = player.y + player_dy * 2.0
           
-          return {
-            type: :final_boss_spiral,
-            damage: @damage * 1.3,
-            radius: 60,
-            delay: 15.0,  # Увеличено с 12.0 до 15.0 (еще в 1.25 раза)
-            center_x: predicted_x,
-            center_y: predicted_y,
-            count: 5,  # 5 кругов в спирали
-            enemy: self
-          }
+          # Создаем несколько спиралей за раз (2-3)
+          attacks = []
+          attack_count = rand(2..3)
+          
+          attack_count.times do |i|
+            offset_angle = (i - attack_count / 2.0) * 0.5
+            offset_distance = i * 60
+            
+            attack_x = predicted_x + Math.cos(offset_angle) * offset_distance
+            attack_y = predicted_y + Math.sin(offset_angle) * offset_distance
+            
+            attacks << {
+              type: :final_boss_spiral,
+              damage: @damage * 1.3,
+              radius: 60,
+              delay: 5.0,  # Уменьшено с 15.0 до 5.0 (в 3 раза быстрее)
+              center_x: attack_x,
+              center_y: attack_y,
+              count: 5,
+              enemy: self
+            }
+          end
+          
+          return attacks.first.merge(attacks: attacks)
         when 1
           # Паттерн 2: Крест из больших кругов
           player_dx = player.x - (player.instance_variable_get(:@last_x) || player.x)
@@ -450,15 +464,29 @@ class Enemy
           predicted_x = player.x + player_dx * 1.8
           predicted_y = player.y + player_dy * 1.8
           
-          return {
-            type: :final_boss_cross,
-            damage: @damage * 1.4,
-            radius: 90,
-            delay: 18.0,  # Увеличено с 15.0 до 18.0 (еще в 1.2 раза)
-            center_x: predicted_x,
-            center_y: predicted_y,
-            enemy: self
-          }
+          # Создаем несколько крестов за раз (2)
+          attacks = []
+          attack_count = 2
+          
+          attack_count.times do |i|
+            offset_angle = (i - attack_count / 2.0) * 0.6
+            offset_distance = i * 80
+            
+            attack_x = predicted_x + Math.cos(offset_angle) * offset_distance
+            attack_y = predicted_y + Math.sin(offset_angle) * offset_distance
+            
+            attacks << {
+              type: :final_boss_cross,
+              damage: @damage * 1.4,
+              radius: 90,
+              delay: 6.0,  # Уменьшено с 18.0 до 6.0 (в 3 раза быстрее)
+              center_x: attack_x,
+              center_y: attack_y,
+              enemy: self
+            }
+          end
+          
+          return attacks.first.merge(attacks: attacks)
         when 2
           # Паттерн 3: Кольцо из кругов вокруг игрока
           player_dx = player.x - (player.instance_variable_get(:@last_x) || player.x)
@@ -466,16 +494,30 @@ class Enemy
           predicted_x = player.x + player_dx * 2.0
           predicted_y = player.y + player_dy * 2.0
           
-          return {
-            type: :final_boss_ring,
-            damage: @damage * 1.2,
-            radius: 70,
-            delay: 15.0,  # Увеличено с 12.0 до 15.0 (еще в 1.25 раза)
-            center_x: predicted_x,
-            center_y: predicted_y,
-            count: 8,  # 8 кругов в кольце
-            enemy: self
-          }
+          # Создаем несколько колец за раз (2)
+          attacks = []
+          attack_count = 2
+          
+          attack_count.times do |i|
+            offset_angle = (i - attack_count / 2.0) * 0.7
+            offset_distance = i * 100
+            
+            attack_x = predicted_x + Math.cos(offset_angle) * offset_distance
+            attack_y = predicted_y + Math.sin(offset_angle) * offset_distance
+            
+            attacks << {
+              type: :final_boss_ring,
+              damage: @damage * 1.2,
+              radius: 70,
+              delay: 5.0,  # Уменьшено с 15.0 до 5.0 (в 3 раза быстрее)
+              center_x: attack_x,
+              center_y: attack_y,
+              count: 8,
+              enemy: self
+            }
+          end
+          
+          return attacks.first.merge(attacks: attacks)
         when 3
           # Паттерн 4: Волна из кругов в направлении игрока
           player_dx = player.x - (player.instance_variable_get(:@last_x) || player.x)
@@ -483,16 +525,30 @@ class Enemy
           predicted_x = player.x + player_dx * 2.0
           predicted_y = player.y + player_dy * 2.0
           
-          return {
-            type: :final_boss_wave,
-            damage: @damage * 1.3,
-            radius: 80,
-            delay: 15.0,  # Увеличено с 12.0 до 15.0 (еще в 1.25 раза)
-            center_x: predicted_x,
-            center_y: predicted_y,
-            count: 4,  # 4 круга в волне
-            enemy: self
-          }
+          # Создаем несколько волн за раз (2-3)
+          attacks = []
+          attack_count = rand(2..3)
+          
+          attack_count.times do |i|
+            offset_angle = (i - attack_count / 2.0) * 0.4
+            offset_distance = i * 70
+            
+            attack_x = predicted_x + Math.cos(offset_angle) * offset_distance
+            attack_y = predicted_y + Math.sin(offset_angle) * offset_distance
+            
+            attacks << {
+              type: :final_boss_wave,
+              damage: @damage * 1.3,
+              radius: 80,
+              delay: 5.0,  # Уменьшено с 15.0 до 5.0 (в 3 раза быстрее)
+              center_x: attack_x,
+              center_y: attack_y,
+              count: 4,
+              enemy: self
+            }
+          end
+          
+          return attacks.first.merge(attacks: attacks)
         when 4
           # Паттерн 5: Огромный взрыв вокруг босса
           return {
