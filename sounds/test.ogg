@@ -12,8 +12,8 @@
 
 <head profile="http://www.w3.org/1999/xhtml/vocab">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<link rel="alternate" type="application/rss+xml" title="Active Forum Topics" href="https://opengameart.org/active-forum-topics.xml?destination=sites/default/files/audio_preview/swish_1.ogg" />
-<link rel="alternate" type="application/rss+xml" title="Recent comments" href="https://opengameart.org/recent-comments.xml?destination=sites/default/files/audio_preview/swish_1.ogg" />
+<link rel="alternate" type="application/rss+xml" title="Active Forum Topics" href="https://opengameart.org/active-forum-topics.xml?destination=sites/default/files/audio/swish_1.ogg" />
+<link rel="alternate" type="application/rss+xml" title="Recent comments" href="https://opengameart.org/recent-comments.xml?destination=sites/default/files/audio/swish_1.ogg" />
 <link rel="shortcut icon" href="https://opengameart.org/sites/all/themes/oga/opengameart2_favicon.ico" type="image/vnd.microsoft.icon" />
 <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible" />
 <meta name="generator" content="Drupal 7 (http://drupal.org)" />
@@ -40,11 +40,11 @@
 <script type="text/javascript" src="https://opengameart.org/sites/default/files/js/js_WNcjX9C7AzUw-N1abXrdZLpLq71PtBe1dISODcGzqx8.js"></script>
 <script type="text/javascript">
 <!--//--><![CDATA[//><!--
-jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","setHasJsCookie":0,"ajaxPageState":{"theme":"oga_theme","theme_token":"Qx8ayVbwPUmEqIaAha0fQl48bPD4IP9Ny41NseYWFwU","js":{"misc\/jquery.js":1,"misc\/jquery-extend-3.4.0.js":1,"misc\/jquery-html-prefilter-3.5.0-backport.js":1,"misc\/jquery.once.js":1,"misc\/drupal.js":1,"misc\/jquery.cookie.js":1,"misc\/jquery.form.js":1,"misc\/form-single-submit.js":1,"misc\/ajax.js":1,"sites\/all\/modules\/oga\/ajax_dlcount\/ajax_dlcount.js":1,"sites\/all\/modules\/entityreference\/js\/entityreference.js":1,"sites\/all\/modules\/compact_forms\/compact_forms.js":1,"sites\/all\/modules\/views\/js\/base.js":1,"misc\/progress.js":1,"sites\/all\/modules\/views\/js\/ajax_view.js":1,"modules\/openid\/openid.js":1,"sites\/all\/themes\/oga\/oga_theme.js":1},"css":{"modules\/system\/system.base.css":1,"modules\/system\/system.menus.css":1,"modules\/system\/system.messages.css":1,"modules\/system\/system.theme.css":1,"sites\/all\/modules\/comment_notify\/comment_notify.css":1,"modules\/comment\/comment.css":1,"modules\/field\/theme\/field.css":1,"sites\/all\/modules\/logintoboggan\/logintoboggan.css":1,"modules\/node\/node.css":1,"modules\/search\/search.css":1,"modules\/user\/user.css":1,"modules\/forum\/forum.css":1,"sites\/all\/modules\/views\/css\/views.css":1,"sites\/all\/modules\/ctools\/css\/ctools.css":1,"sites\/all\/modules\/compact_forms\/compact_forms.css":1,"modules\/openid\/openid.css":1,"sites\/all\/themes\/oga\/oga_theme.css":1}},"compactForms":{"forms":["user-login-form"],"stars":2},"urlIsAjaxTrusted":{"\/art-search":true,"\/views\/ajax":true,"\/sites\/default\/files\/audio_preview\/swish_1.ogg?destination=sites\/default\/files\/audio_preview\/swish_1.ogg":true},"views":{"ajax_path":"\/views\/ajax","ajaxViews":{"views_dom_id:e03a5dba800b0906485303efa5b0eb54":{"view_name":"art_challenge","view_display_id":"block","view_args":"","view_path":"sites\/default\/files\/audio_preview\/swish_1.ogg","view_base_path":"art-challenge","view_dom_id":"e03a5dba800b0906485303efa5b0eb54","pager_element":0},"views_dom_id:84018b3bccfa9c739d716f958af30293":{"view_name":"art_collections","view_display_id":"block_2","view_args":"","view_path":"apple-touch-icon-precomposed.png","view_base_path":"collections","view_dom_id":"84018b3bccfa9c739d716f958af30293","pager_element":0}}}});
+jQuery.extend(Drupal.settings, {"basePath":"\/","pathPrefix":"","setHasJsCookie":0,"ajaxPageState":{"theme":"oga_theme","theme_token":"JJbwEQzveniitIEUl-mNp-KCLHeUzN0w72-XmjSE1tw","js":{"misc\/jquery.js":1,"misc\/jquery-extend-3.4.0.js":1,"misc\/jquery-html-prefilter-3.5.0-backport.js":1,"misc\/jquery.once.js":1,"misc\/drupal.js":1,"misc\/jquery.cookie.js":1,"misc\/jquery.form.js":1,"misc\/form-single-submit.js":1,"misc\/ajax.js":1,"sites\/all\/modules\/oga\/ajax_dlcount\/ajax_dlcount.js":1,"sites\/all\/modules\/entityreference\/js\/entityreference.js":1,"sites\/all\/modules\/compact_forms\/compact_forms.js":1,"sites\/all\/modules\/views\/js\/base.js":1,"misc\/progress.js":1,"sites\/all\/modules\/views\/js\/ajax_view.js":1,"modules\/openid\/openid.js":1,"sites\/all\/themes\/oga\/oga_theme.js":1},"css":{"modules\/system\/system.base.css":1,"modules\/system\/system.menus.css":1,"modules\/system\/system.messages.css":1,"modules\/system\/system.theme.css":1,"sites\/all\/modules\/comment_notify\/comment_notify.css":1,"modules\/comment\/comment.css":1,"modules\/field\/theme\/field.css":1,"sites\/all\/modules\/logintoboggan\/logintoboggan.css":1,"modules\/node\/node.css":1,"modules\/search\/search.css":1,"modules\/user\/user.css":1,"modules\/forum\/forum.css":1,"sites\/all\/modules\/views\/css\/views.css":1,"sites\/all\/modules\/ctools\/css\/ctools.css":1,"sites\/all\/modules\/compact_forms\/compact_forms.css":1,"modules\/openid\/openid.css":1,"sites\/all\/themes\/oga\/oga_theme.css":1}},"compactForms":{"forms":["user-login-form"],"stars":2},"urlIsAjaxTrusted":{"\/art-search":true,"\/views\/ajax":true,"\/sites\/default\/files\/audio\/swish_1.ogg?destination=sites\/default\/files\/audio\/swish_1.ogg":true},"views":{"ajax_path":"\/views\/ajax","ajaxViews":{"views_dom_id:7dc2706ea6fac7db245b80d011b872c8":{"view_name":"art_challenge","view_display_id":"block","view_args":"","view_path":"sites\/default\/files\/audio\/swish_1.ogg","view_base_path":"art-challenge","view_dom_id":"7dc2706ea6fac7db245b80d011b872c8","pager_element":0},"views_dom_id:84018b3bccfa9c739d716f958af30293":{"view_name":"art_collections","view_display_id":"block_2","view_args":"","view_path":"apple-touch-icon-precomposed.png","view_base_path":"collections","view_dom_id":"84018b3bccfa9c739d716f958af30293","pager_element":0}}}});
 //--><!]]>
 </script>
 </head>
-<body class="html not-front not-logged-in no-sidebars page-sites page-sites-default page-sites-default-files page-sites-default-files-audio-preview page-sites-default-files-audio-preview-swish-1ogg domain-opengameart-org" >
+<body class="html not-front not-logged-in no-sidebars page-sites page-sites-default page-sites-default-files page-sites-default-files-audio page-sites-default-files-audio-swish-1ogg domain-opengameart-org" >
   <div id="skip-link">
     <a href="#main-content" class="element-invisible element-focusable">Skip to main content</a>
   </div>
@@ -62,7 +62,7 @@ node_art_form_group_author_information {
     <h2>User login</h2>
   
   <div class="content">
-    <form action="/sites/default/files/audio_preview/swish_1.ogg?destination=sites/default/files/audio_preview/swish_1.ogg" method="post" id="user-login-form" accept-charset="UTF-8"><div><div class="form-item form-type-textfield form-item-openid-identifier">
+    <form action="/sites/default/files/audio/swish_1.ogg?destination=sites/default/files/audio/swish_1.ogg" method="post" id="user-login-form" accept-charset="UTF-8"><div><div class="form-item form-type-textfield form-item-openid-identifier">
   <label for="edit-openid-identifier">OpenID </label>
  <input type="text" id="edit-openid-identifier" name="openid_identifier" value="" size="15" maxlength="255" class="form-text" />
 <div class="description"><a href="http://openid.net/">What is OpenID?</a></div>
@@ -75,9 +75,9 @@ node_art_form_group_author_information {
   <label for="edit-pass">Password <span class="form-required" title="This field is required.">*</span></label>
  <input type="password" id="edit-pass" name="pass" size="15" maxlength="128" class="form-text required" />
 </div>
-<input type="hidden" name="form_build_id" value="form-HOPNQdpPaoVJVP5KL3eWamlt5t_3yBQyWnflDnIFT_M" />
+<input type="hidden" name="form_build_id" value="form-FCCWtNA3wRtBaCL6sz7Z-E9g2IZgebjcU9dKV8_uJZA" />
 <input type="hidden" name="form_id" value="user_login_block" />
-<input type="hidden" name="openid.return_to" value="https://opengameart.org/openid/authenticate?destination=sites/default/files/audio_preview/swish_1.ogg" />
+<input type="hidden" name="openid.return_to" value="https://opengameart.org/openid/authenticate?destination=sites/default/files/audio/swish_1.ogg" />
 <div class="item-list"><ul class="openid-links"><li class="openid-link first"><a href="#openid-login">Log in using OpenID</a></li>
 <li class="user-link last"><a href="#">Cancel OpenID login</a></li>
 </ul></div><div class="item-list"><ul><li class="first"><a href="/user/register" title="Create a new user account.">Create new account</a></li>
@@ -193,14 +193,14 @@ node_art_form_group_author_information {
     <h2>Active Forum Topics - (<a href='/forum'>view more</a>)</h2>
   
   <div class="content">
-    <div class="view view-new-forum-topics view-id-new_forum_topics view-display-id-block_1 view-dom-id-f76775f1c2308afacdbcaa1c9672bb4c">
+    <div class="view view-new-forum-topics view-id-new_forum_topics view-display-id-block_1 view-dom-id-5ffe7b3d354d7606ca91a2173fe2ff12">
         
   
   
       <div class="view-content">
       <div class="item-list">    <ul>          <li class="views-row views-row-1 views-row-odd views-row-first">  
   <span class="views-field views-field-title">        <span class="field-content"><a href="/forumtopic/herodom#comment-110707">Herodom</a></span>  </span>  
-  <span class="views-field views-field-last-comment-timestamp">        <span class="field-content"><em class="placeholder">21 hours 39 min</em> ago</span>  </span>  
+  <span class="views-field views-field-last-comment-timestamp">        <span class="field-content"><em class="placeholder">21 hours 45 min</em> ago</span>  </span>  
   <span class="views-field views-field-last-comment-name">    <span class="views-label views-label-last-comment-name">by</span>    <span class="field-content"><a href="/users/tsorthan-grove" title="View user profile." class="username" xml:lang="" about="/users/tsorthan-grove" typeof="sioc:UserAccount" property="foaf:name" datatype="">Tsorthan Grove</a></span>  </span></li>
           <li class="views-row views-row-2 views-row-even">  
   <span class="views-field views-field-title">        <span class="field-content"><a href="/forumtopic/new-updated-generator#comment-">New Updated Generator</a></span>  </span>  
@@ -208,7 +208,7 @@ node_art_form_group_author_information {
   <span class="views-field views-field-last-comment-name">    <span class="views-label views-label-last-comment-name">by</span>    <span class="field-content"><a href="/users/gaurav" title="View user profile." class="username" xml:lang="" about="/users/gaurav" typeof="sioc:UserAccount" property="foaf:name" datatype="">Gaurav</a></span>  </span></li>
           <li class="views-row views-row-3 views-row-odd">  
   <span class="views-field views-field-title">        <span class="field-content"><a href="/forumtopic/freeopen-source-research-project-about-games#comment-110645">Free/Open-Source Research Project About Games</a></span>  </span>  
-  <span class="views-field views-field-last-comment-timestamp">        <span class="field-content"><em class="placeholder">3 days 17 hours</em> ago</span>  </span>  
+  <span class="views-field views-field-last-comment-timestamp">        <span class="field-content"><em class="placeholder">3 days 18 hours</em> ago</span>  </span>  
   <span class="views-field views-field-last-comment-name">    <span class="views-label views-label-last-comment-name">by</span>    <span class="field-content"><a href="/users/medicinestorm" title="View user profile." class="username" xml:lang="" about="/users/medicinestorm" typeof="sioc:UserAccount" property="foaf:name" datatype="">MedicineStorm</a></span>  </span></li>
           <li class="views-row views-row-4 views-row-even">  
   <span class="views-field views-field-title">        <span class="field-content"><a href="/forumtopic/sharing-my-music-and-sound-fx-over-2500-tracks#comment-110632">Sharing My Music and Sound FX - Over 2500 Tracks</a></span>  </span>  
@@ -228,7 +228,7 @@ node_art_form_group_author_information {
   <span class="views-field views-field-last-comment-name">    <span class="views-label views-label-last-comment-name">by</span>    <span class="field-content"><a href="/users/blueprawn" title="View user profile." class="username" xml:lang="" about="/users/blueprawn" typeof="sioc:UserAccount" property="foaf:name" datatype="">blue_prawn</a></span>  </span></li>
           <li class="views-row views-row-8 views-row-even views-row-last">  
   <span class="views-field views-field-title">        <span class="field-content"><a href="/forumtopic/free-as-in-freedom-fantasysci-fi-species#comment-110579">Free (as in freedom) fantasy/sci-fi species</a></span>  </span>  
-  <span class="views-field views-field-last-comment-timestamp">        <span class="field-content"><em class="placeholder">6 days 20 hours</em> ago</span>  </span>  
+  <span class="views-field views-field-last-comment-timestamp">        <span class="field-content"><em class="placeholder">6 days 21 hours</em> ago</span>  </span>  
   <span class="views-field views-field-last-comment-name">    <span class="views-label views-label-last-comment-name">by</span>    <span class="field-content"><a href="/users/ba%C5%9Dto" title="View user profile." class="username" xml:lang="" about="/users/ba%C5%9Dto" typeof="sioc:UserAccount" property="foaf:name" datatype="">Baŝto</a></span>  </span></li>
       </ul></div>    </div>
   
@@ -237,7 +237,7 @@ node_art_form_group_author_information {
   
   
       <div class="feed-icon">
-      <a href="https://opengameart.org/active-forum-topics.xml?destination=users/giuid" class="feed-icon" title="Subscribe to Active Forum Topics"><img typeof="foaf:Image" src="https://opengameart.org/sites/all/themes/oga/rss-icon-nobg.png" width="16" height="16" alt="Subscribe to Active Forum Topics" /></a>    </div>
+      <a href="https://opengameart.org/active-forum-topics.xml?destination=sites/default/files/opening.png" class="feed-icon" title="Subscribe to Active Forum Topics"><img typeof="foaf:Image" src="https://opengameart.org/sites/all/themes/oga/rss-icon-nobg.png" width="16" height="16" alt="Subscribe to Active Forum Topics" /></a>    </div>
   
 </div>  </div>
 </div>
@@ -333,7 +333,7 @@ node_art_form_group_author_information {
     <h2>Affiliates</h2>
   
   <div class="content">
-    <div class="view view-links view-id-links view-display-id-block view-dom-id-3c88e32de2da73a84f19f1b951d5c4dd">
+    <div class="view view-links view-id-links view-display-id-block view-dom-id-bc89b79ca350230a55a578704be4a2af">
         
   
   
@@ -370,7 +370,7 @@ node_art_form_group_author_information {
 
     
   <div class="content">
-    The requested page "/sites/default/files/audio_preview/swish_1.ogg" could not be found.  </div>
+    The requested page "/sites/default/files/audio/swish_1.ogg" could not be found.  </div>
 </div>
   </div>
     </div>
