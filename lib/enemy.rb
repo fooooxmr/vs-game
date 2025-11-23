@@ -271,8 +271,8 @@ class Enemy
       contact_distance = (@size + player.size) * 0.9
       
       if distance < contact_distance
-        # Наносим урон при толкании (70% от обычного урона для всех врагов)
-        contact_damage = @damage * 0.7 # 70% от обычного урона
+        # Наносим урон при толкании (85% от обычного урона для всех врагов - увеличено с 70%)
+        contact_damage = @damage * 0.85 # 85% от обычного урона
         player.take_damage(contact_damage) if player.respond_to?(:take_damage)
         @last_contact_damage_time = current_time
       end

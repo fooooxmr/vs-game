@@ -257,7 +257,9 @@ class Player
     @last_x = @x
     @last_y = @y
     @is_moving = false
-    @is_attacking = false
+    # НЕ сбрасываем @is_attacking здесь - он устанавливается в auto_attack
+    # Сохраняем старое значение для проверки
+    old_attack_time = @last_attack_time
     @took_damage = false
 
     # Применяем пассивные улучшения
@@ -279,11 +281,16 @@ class Player
     end
     
     # Автоатака ближайшего врага (вызывается из Game#update, здесь только проверяем состояние атаки)
-    old_attack_time = @last_attack_time
     target_enemy = find_nearest_enemy(enemies)
-    # auto_attack вызывается из Game#update, чтобы проектили обрабатывались там
-    # Проверяем, произошла ли атака (время изменилось)
-    @is_attacking = (@last_attack_time != old_attack_time && Time.now.to_f - @last_attack_time < 0.2)
+    # auto_attack вызывается из Game#update после этого метода
+    # Проверяем, произошла ли атака (время изменилось или уже установлен флаг)
+    # @is_attacking устанавливается в auto_attack, но если время изменилось, тоже устанавливаем флаг
+    if @last_attack_time != old_attack_time
+      @is_attacking = true
+    elsif @is_attacking && Time.now.to_f - @last_attack_time >= 0.2
+      # Сбрасываем флаг атаки, если прошло достаточно времени
+      @is_attacking = false
+    end
     
     # Обновляем спрайт (с учетом камеры)
     if @sprite

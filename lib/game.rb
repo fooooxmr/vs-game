@@ -1306,21 +1306,31 @@ class Game
     # Звук открытия сундука
     @audio_manager&.play_sound(:chest_open)
     
-    # Генерируем награды из сундука
-    rewards = generate_chest_rewards
-    
-    # Применяем награды (но не показываем экран улучшений здесь)
-    level_up = apply_chest_rewards(rewards, chest.x, chest.y)
+    # Для бесплатных сундуков - только показываем экран улучшений, не применяем награды напрямую
+    if chest.type == :free_chest || free
+      # Генерируем улучшения для экрана выбора (как при повышении уровня)
+      available = @vs_upgrade_system.get_level_upgrades(3)
+      if !available.empty?
+        @upgrade_screen.show_vs_upgrades(available, @vs_upgrade_system)
+        @showing_upgrades = true
+        @player.keys_pressed.clear
+        @last_time = Time.now.to_f
+      end
+    else
+      # Для обычных сундуков - применяем награды напрямую
+      rewards = generate_chest_rewards
+      level_up = apply_chest_rewards(rewards, chest.x, chest.y)
+      
+      # Показываем экран улучшений только если уровень повысился
+      if level_up
+        show_upgrade_screen
+      end
+    end
     
     # Удаляем сундук из карты после открытия
     chest.remove # Удаляем все фигуры
     @map.objects.delete(chest) # Удаляем из массива объектов карты
     @map.cache_interactive_objects if @map.respond_to?(:cache_interactive_objects) # Обновляем кэш
-    
-    # Показываем экран улучшений только один раз, если уровень повысился
-    if level_up
-      show_upgrade_screen
-    end
   end
   
   def apply_chest_rewards(rewards, chest_x, chest_y)
@@ -1475,13 +1485,12 @@ class Game
       
     when :free_chest
       # Создаем бесплатный сундук на месте дропа (выглядит по-другому)
+      # НЕ открываем сразу - игрок должен открыть его вручную через handle_interactive_objects
+      # Это позволит показать только экран улучшений, а не применять награды напрямую
       chest = MapObject.new(pickup.x, pickup.y, :free_chest)
       # Обновляем позиции фигур относительно камеры
       chest.update_positions(@camera) if chest.respond_to?(:update_positions)
       @map.objects << chest
-      # Открываем сразу (без стоимости) - генерируем награды напрямую
-      rewards = generate_chest_rewards
-      apply_chest_rewards(rewards, pickup.x, pickup.y)
       
     when :magnet
       # Притягиваем весь опыт с карты
