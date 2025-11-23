@@ -310,7 +310,7 @@ class Enemy
             type: :boss_ranged_attack,
             damage: @damage * 1.5,  # Дальняя атака сильнее
             radius: 80,
-            delay: 1.5,  # Задержка перед ударом
+            delay: 4.0,  # Задержка перед ударом (увеличено с 1.5 до 4.0 - в 2.67 раза)
             x: predicted_x,
             y: predicted_y,
             enemy: self
@@ -405,7 +405,7 @@ class Enemy
             type: :final_boss_spiral,
             damage: @damage * 1.3,
             radius: 60,
-            delay: 2.0,
+            delay: 5.0,  # Увеличено с 2.0 до 5.0 (в 2.5 раза)
             center_x: predicted_x,
             center_y: predicted_y,
             count: 5,  # 5 кругов в спирали
@@ -422,7 +422,7 @@ class Enemy
             type: :final_boss_cross,
             damage: @damage * 1.4,
             radius: 90,
-            delay: 2.2,
+            delay: 5.5,  # Увеличено с 2.2 до 5.5 (в 2.5 раза)
             center_x: predicted_x,
             center_y: predicted_y,
             enemy: self
@@ -438,7 +438,7 @@ class Enemy
             type: :final_boss_ring,
             damage: @damage * 1.2,
             radius: 70,
-            delay: 2.0,
+            delay: 5.0,  # Увеличено с 2.0 до 5.0 (в 2.5 раза)
             center_x: predicted_x,
             center_y: predicted_y,
             count: 8,  # 8 кругов в кольце
@@ -455,7 +455,7 @@ class Enemy
             type: :final_boss_wave,
             damage: @damage * 1.3,
             radius: 80,
-            delay: 2.0,
+            delay: 5.0,  # Увеличено с 2.0 до 5.0 (в 2.5 раза)
             center_x: predicted_x,
             center_y: predicted_y,
             count: 4,  # 4 круга в волне
@@ -467,7 +467,7 @@ class Enemy
             type: :final_boss_explosion,
             damage: @damage * 1.5,
             radius: 200,
-            delay: 2.5,
+            delay: 6.0,  # Увеличено с 2.5 до 6.0 (в 2.4 раза)
             x: @x,
             y: @y,
             enemy: self
@@ -489,7 +489,7 @@ class Enemy
             type: :boss_pattern_circles,
             damage: @damage * 1.2,
             radius: 70,
-            delay: 1.8,
+            delay: 4.5,  # Увеличено с 1.8 до 4.5 (в 2.5 раза)
             center_x: predicted_x,
             center_y: predicted_y,
             count: 3,  # 3 круга
@@ -506,7 +506,7 @@ class Enemy
             type: :boss_pattern_large_circle,
             damage: @damage * 1.5,
             radius: 100,
-            delay: 2.0,
+            delay: 5.0,  # Увеличено с 2.0 до 5.0 (в 2.5 раза)
             x: predicted_x,
             y: predicted_y,
             enemy: self
@@ -517,7 +517,7 @@ class Enemy
             type: :boss_pattern_nearby,
             damage: @damage * 1.3,
             radius: 120,
-            delay: 1.5,
+            delay: 3.5,  # Увеличено с 1.5 до 3.5 (в 2.33 раза)
             x: @x,
             y: @y,
             enemy: self
