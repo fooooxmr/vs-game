@@ -28,6 +28,8 @@ class Game
     @hero_data = hero_data
     @audio_manager = audio_manager
     reset_game
+    # Запускаем фоновую музыку при старте игры
+    @audio_manager&.play_music
   end
 
   def reset_game

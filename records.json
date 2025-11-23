@@ -41,22 +41,22 @@
   },
   {
     "enemies_killed": 36,
-    "time_alive": 161,
-    "level": 8,
-    "gold": 25,
-    "weapons_count": 2,
-    "passives_count": 5,
-    "date": "2025-11-23 21:32:15",
-    "completed": false
-  },
-  {
-    "enemies_killed": 36,
     "time_alive": 149,
     "level": 8,
     "gold": 100,
     "weapons_count": 2,
     "passives_count": 5,
     "date": "2025-11-23 17:37:16",
+    "completed": false
+  },
+  {
+    "enemies_killed": 36,
+    "time_alive": 161,
+    "level": 8,
+    "gold": 25,
+    "weapons_count": 2,
+    "passives_count": 5,
+    "date": "2025-11-23 21:32:15",
     "completed": false
   },
   {

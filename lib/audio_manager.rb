@@ -28,10 +28,12 @@ class AudioManager
       barrel_explode: 'sounds/barrel_explode.wav'
     }
     
+    loaded_count = 0
     sound_files.each do |key, path|
       if File.exist?(path)
         begin
           @sounds[key] = Sound.new(path)
+          loaded_count += 1
         rescue => e
           puts "Не удалось загрузить звук #{path}: #{e.message}"
           @sounds[key] = nil
@@ -41,6 +43,8 @@ class AudioManager
       end
     end
     
+    puts "Загружено звуков: #{loaded_count}/#{sound_files.size}" if ENV['DEBUG']
+    
     # Загружаем фоновую музыку (если есть)
     if File.exist?('sounds/music.ogg') || File.exist?('sounds/music.wav')
       music_path = File.exist?('sounds/music.ogg') ? 'sounds/music.ogg' : 'sounds/music.wav'
@@ -48,10 +52,13 @@ class AudioManager
         @music = Music.new(music_path)
         @music.loop = true
         @music.volume = @music_volume / 100.0
+        puts "Фоновая музыка загружена: #{music_path}" if ENV['DEBUG']
       rescue => e
         puts "Не удалось загрузить музыку: #{e.message}"
         @music = nil
       end
+    else
+      puts "Фоновая музыка не найдена (ищем sounds/music.ogg или sounds/music.wav)" if ENV['DEBUG']
     end
   end
 
