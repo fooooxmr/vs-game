@@ -421,19 +421,20 @@ class UpgradeScreen
         level_diff = new_level - temp_level
         
         if level_diff > 0
-          # Урон: +0.5% за уровень
-          damage_bonus = 1.0 + (level_diff * 0.005)
-          new_damage = (weapon.instance_variable_get(:@base_damage) * (1.0 + (new_level * 0.005))).round(1)
+          # Урон: +5% за уровень (обновлено с 0.5%)
+          base_damage = weapon.instance_variable_get(:@base_damage)
+          damage_bonus = 1.0 + (new_level * 0.05)
+          new_damage = (base_damage * damage_bonus).round(1)
           
-          # Кулдаун: -0.3% за уровень
+          # Кулдаун: -3% за уровень (обновлено с 0.3%)
           base_cooldown = weapon.instance_variable_get(:@base_cooldown)
-          cooldown_reduction = new_level * 0.003
-          new_cooldown = [base_cooldown * (1.0 - cooldown_reduction), base_cooldown * 0.7].max.round(2)
+          cooldown_reduction = new_level * 0.03
+          new_cooldown = [base_cooldown * (1.0 - cooldown_reduction), base_cooldown * 0.5].max.round(2)
           
-          # Дальность: +0.5% за уровень (максимум +5%)
+          # Дальность: +12% за уровень (обновлено с 0.5%, максимум +100%)
           base_range = weapon.instance_variable_get(:@base_range)
-          range_bonus = 1.0 + (new_level * 0.005)
-          new_range = (base_range * [range_bonus, 1.05].min).round(0)
+          range_bonus = 1.0 + (new_level * 0.12)
+          new_range = (base_range * [range_bonus, 2.0].min).round(0)
           
           "Урон: #{current_damage} → #{new_damage}\nДальность: #{current_range} → #{new_range}\nКулдаун: #{current_cooldown}с → #{new_cooldown}с"
         else
@@ -447,57 +448,67 @@ class UpgradeScreen
       if passive
         bonus_per_level = passive.instance_variable_get(:@bonus_per_level)
         
-        # Текущий бонус (без рарности для существующих пассивок)
-        if passive.respond_to?(:get_bonus_without_rarity)
-          current_bonus = passive.get_bonus_without_rarity
-        else
-          current_bonus = passive.level * bonus_per_level
-        end
+        # Получаем текущий уровень пассивки из игрока (если она уже есть)
+        existing_passive = @vs_system.instance_variable_get(:@player).passives.find { |p| p.type == passive.type }
+        current_level = existing_passive ? existing_passive.level : 0
+        current_rarity = existing_passive ? existing_passive.rarity_multiplier : 1.0
         
-        # Новый бонус с учетом рарности
-        new_level = passive.level + 1
+        # Текущий бонус (с учетом текущей рарности)
+        current_bonus = current_level * bonus_per_level * current_rarity
+        
+        # Новый бонус с учетом рарности улучшения
+        new_level = current_level + 1
         new_bonus = new_level * bonus_per_level * rarity_multiplier
         
         case passive.type
         when :damage_boost, :damage
-          "Урон: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          # Для урона показываем процентный бонус
+          "Урон: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         when :speed_boost, :move_speed
-          "Скорость: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          "Скорость: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         when :health_boost, :max_health
-          "Здоровье: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          # Для здоровья показываем процентный бонус к максимальному здоровью
+          "Макс. здоровье: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         when :regen
           "Регенерация: #{current_bonus.round(2)} → #{new_bonus.round(2)} HP/с"
         when :crit
-          "Крит: #{current_bonus * 100}% → #{new_bonus.round(1) * 100}%"
+          "Крит: #{current_bonus.round(1) * 100}% → #{new_bonus.round(1) * 100}%"
         when :armor
-          "Броня: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          "Броня: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         when :cooldown_reduction
-          "Кулдаун: -#{current_bonus * 100}% → -#{new_bonus.round(1) * 100}%"
+          "Кулдаун: -#{current_bonus.round(1) * 100}% → -#{new_bonus.round(1) * 100}%"
         when :area
-          "Область: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          "Область: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         when :duration
-          "Длительность: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          "Длительность: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         when :amount, :weapon_amount
           "Снарядов: +#{current_bonus.round(1)} → +#{new_bonus.round(1)}"
         when :magnet
-          # Для магнита бонус умножается на 20 для отображения
-          current_magnet = (current_bonus * 20).round(0)
-          new_magnet = (new_bonus * 20).round(0)
-          "Радиус подбора: +#{current_magnet} → +#{new_magnet}"
+          # Для магнита показываем реальные значения радиуса
+          # Базовый радиус подбора 50 (из Player#initialize)
+          base_magnet = 50
+          # Бонус умножается на 20 для получения пикселей (bonus_per_level = 20)
+          current_magnet = (base_magnet + current_bonus).round(0)
+          new_magnet = (base_magnet + new_bonus).round(0)
+          "Радиус подбора: #{current_magnet} → #{new_magnet}"
         when :luck
-          "Удача: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          "Удача: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         when :growth
-          "Опыт: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          "Опыт: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         when :vampirism
-          "Вампиризм: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          "Вампиризм: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         when :drop_chance
-          "Шанс дропа: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          # Для дропа показываем общий шанс (базовый 5% + бонус)
+          base_drop = 0.05
+          current_total = (base_drop + current_bonus) * 100
+          new_total = (base_drop + new_bonus) * 100
+          "Шанс дропа: #{current_total.round(1)}% → #{new_total.round(1)}%"
         when :weapon_area
-          "Размер оружия: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          "Размер оружия: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         when :weapon_range
-          "Дальность оружия: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          "Дальность оружия: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         else
-          "Пассивное улучшение: +#{current_bonus * 100}% → +#{new_bonus.round(1) * 100}%"
+          "Пассивное улучшение: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         end
       else
         "Улучшение пассива"
