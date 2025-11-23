@@ -86,6 +86,8 @@ class Game
     @wave_spawned_this_minute = false # Флаг волны в текущей минуте
     @minimap_shapes = {} # Фигуры для миникарты
     @elite_attack_indicators = [] # Индикаторы атак элитных монстров
+    @enemies_cache_dirty = true # Флаг для обновления кэша врагов
+    @update_counter = 0 # Счетчик кадров для редких обновлений
   end
 
   def remove_shapes
@@ -234,10 +236,10 @@ class Game
     # Обновляем камеру (следует за игроком)
     @camera.follow(@player.x, @player.y)
     
-    # Кэшируем живых врагов (оптимизация - не создаем новый массив каждый раз)
-    # Обновляем кэш только если он пустой или если враги изменились
-    if @alive_enemies_cache.nil? || @enemies.length != @alive_enemies_cache.length || @alive_enemies_cache.any? { |e| !e.alive? }
+    # Кэшируем живых врагов (оптимизация - обновляем только при необходимости)
+    if @enemies_cache_dirty || @alive_enemies_cache.nil? || @enemies.length != @alive_enemies_cache.length
       @alive_enemies_cache = @enemies.select(&:alive?)
+      @enemies_cache_dirty = false
     end
 
     # Обновляем игрока (теперь с учетом карты и коллизий с врагами)
@@ -284,48 +286,61 @@ class Game
       end
     end
 
-    # Обновляем проектили (с учетом карты и коллизий)
-    @projectiles.each do |p|
-      p.update(delta_time, @alive_enemies_cache, @map)
-      # ВАЖНО: Обновляем позиции фигур после обновления логики
-      if p.active && p.respond_to?(:update_positions)
-        p.update_positions(@camera)
-      end
-      
-      # Вампиризм для кнута (урон наносится в update_whip)
-      if p.type == :whip && p.last_damage_dealt && p.last_damage_dealt > 0
-        @player.apply_vampirism(p.last_damage_dealt)
-        p.last_damage_dealt = 0 # Сбрасываем после применения
-      end
-    end
-    
-    # Проверяем столкновения проектилей с врагами (только с живыми)
+    # Обновляем проектили и проверяем коллизии в одном проходе (оптимизация)
+    inactive_projectiles = []
     @projectiles.each do |projectile|
       next unless projectile.active
       
+      projectile.update(delta_time, @alive_enemies_cache, @map)
+      
+      # ВАЖНО: Обновляем позиции фигур после обновления логики
+      if projectile.respond_to?(:update_positions)
+        projectile.update_positions(@camera)
+      end
+      
+      # Вампиризм для кнута (урон наносится в update_whip)
+      if projectile.type == :whip && projectile.last_damage_dealt && projectile.last_damage_dealt > 0
+        @player.apply_vampirism(projectile.last_damage_dealt)
+        projectile.last_damage_dealt = 0 # Сбрасываем после применения
+      end
+      
+      # Проверяем столкновения с врагами (оптимизация: сначала проверяем расстояние)
+      projectile_x = projectile.x
+      projectile_y = projectile.y
+      projectile_radius = projectile.range || 50 # Примерный радиус для быстрой проверки
+      
       @alive_enemies_cache.each do |enemy|
-        if projectile.check_collision(enemy)
+        # Быстрая проверка расстояния перед точной коллизией
+        dx = projectile_x - enemy.x
+        dy = projectile_y - enemy.y
+        distance_sq = dx * dx + dy * dy
+        max_distance = (projectile_radius + enemy.size) * 1.5 # Запас для точной проверки
+        
+        if distance_sq < max_distance * max_distance && projectile.check_collision(enemy)
           damage_dealt = enemy.take_damage(projectile.damage)
           # Вампиризм для дальнобойного оружия
           @player.apply_vampirism(damage_dealt) if damage_dealt > 0
           # Звук попадания по врагу
           @audio_manager&.play_sound(:enemy_hit)
           projectile.active = false if [:magic_wand, :knife, :axe].include?(projectile.type)
+          break # Проектиль попал, переходим к следующему
         end
       end
-    end
-
-    # Удаляем неактивные проектили (удаляем их фигуры перед удалением из массива)
-    @projectiles.each do |p|
-      unless p.active
-        p.remove
+      
+      # Собираем неактивные проектили для удаления
+      unless projectile.active
+        projectile.remove
+        inactive_projectiles << projectile
       end
     end
-    @projectiles.reject! { |p| !p.active }
+    
+    # Удаляем неактивные проектили одним проходом
+    @projectiles.reject! { |p| inactive_projectiles.include?(p) }
 
-    # Проверяем убийства врагов и создаем опыт и золото
+    # Проверяем убийства врагов и создаем опыт и золото (оптимизация: помечаем кэш как грязный)
     @enemies.each do |enemy|
       if enemy.just_died?
+        @enemies_cache_dirty = true # Помечаем кэш как требующий обновления
         @player.enemies_killed += 1
         
         # Звук смерти врага
@@ -422,8 +437,21 @@ class Game
     @experience_gems.reject! { |g| g[:collected] }
 
     # Обновляем врагов (с учетом карты и коллизий)
+    # Оптимизация: обновляем только видимых врагов (в пределах экрана + запас)
+    screen_min_x, screen_min_y = @camera.screen_to_world(-300, -300)
+    screen_max_x, screen_max_y = @camera.screen_to_world(@window_width + 300, @window_height + 300)
+    
     @enemies.each do |enemy|
       next unless enemy.alive?
+      
+      # Пропускаем врагов далеко от экрана (оптимизация)
+      if enemy.x < screen_min_x || enemy.x > screen_max_x || enemy.y < screen_min_y || enemy.y > screen_max_y
+        # Обновляем только позиции для врагов вне экрана (чтобы они не зависали)
+        if enemy.respond_to?(:update_positions)
+          enemy.update_positions(@camera)
+        end
+        next
+      end
       
       enemy.update(delta_time, @player, @map)
       
@@ -1216,11 +1244,19 @@ class Game
     barrel_interaction_range = 84  # Уменьшено на 30% (было 120) для ящиков
     default_interaction_range = 40  # Обычный радиус для других объектов
     
+    # Оптимизация: обновляем только видимые объекты (в пределах экрана + запас)
+    screen_min_x, screen_min_y = @camera.screen_to_world(-200, -200)
+    screen_max_x, screen_max_y = @camera.screen_to_world(@window_width + 200, @window_height + 200)
+    
     # Создаем копию массива объектов, чтобы можно было безопасно удалять элементы во время итерации
     objects_to_check = @map.objects.dup
     
-    # Проверяем близость к интерактивным объектам
+    # Проверяем близость к интерактивным объектам (только видимые)
     objects_to_check.each do |obj|
+      # Пропускаем объекты далеко от экрана (оптимизация)
+      if obj.x < screen_min_x || obj.x > screen_max_x || obj.y < screen_min_y || obj.y > screen_max_y
+        next
+      end
       next unless obj.interactive
       next if (obj.opened || obj.destroyed) && obj.type != :free_chest # Бесплатный сундук можно открыть
       next unless @map.objects.include?(obj) # Пропускаем, если объект уже удален
