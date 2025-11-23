@@ -1350,25 +1350,78 @@ class Game
     # Звук открытия сундука
     @audio_manager&.play_sound(:chest_open)
     
-    # Для бесплатных сундуков - только показываем экран улучшений, не применяем награды напрямую
-    if chest.type == :free_chest || free
-      # Генерируем улучшения для экрана выбора (как при повышении уровня)
-      available = @vs_upgrade_system.get_level_upgrades(3)
-      if !available.empty?
-        @upgrade_screen.show_vs_upgrades(available, @vs_upgrade_system)
-        @showing_upgrades = true
-        @player.keys_pressed.clear
-        @last_time = Time.now.to_f
+    # Для всех сундуков - показываем экран улучшений с наградами из сундука
+    rewards = generate_chest_rewards
+    
+    # Преобразуем награды из сундука в формат для экрана улучшений
+    available = []
+    rewards.each do |reward|
+      case reward[:type]
+      when :new_weapon
+        available << {
+          type: :new_weapon,
+          weapon_type: reward[:weapon_type],
+          weapon: reward[:weapon],
+          name: reward[:name],
+          icon: reward[:icon],
+          level: 0,
+          max_level: reward[:weapon].max_level,
+          rarity: reward[:rarity],
+          rarity_multiplier: reward[:rarity_multiplier]
+        }
+      when :weapon_upgrade
+        available << {
+          type: :weapon_upgrade,
+          weapon_type: reward[:weapon_type],
+          weapon: reward[:weapon],
+          name: reward[:name],
+          icon: reward[:icon],
+          level: reward[:level],
+          max_level: reward[:max_level],
+          rarity: reward[:rarity],
+          rarity_multiplier: reward[:rarity_multiplier],
+          chest_upgrade: reward[:chest_upgrade]
+        }
+      when :new_passive
+        available << {
+          type: :new_passive,
+          passive_type: reward[:passive_type],
+          passive: reward[:passive],
+          name: reward[:name],
+          icon: reward[:icon],
+          level: 0,
+          max_level: reward[:passive].max_level,
+          rarity: reward[:rarity],
+          rarity_multiplier: reward[:rarity_multiplier]
+        }
+      when :passive_upgrade
+        available << {
+          type: :passive_upgrade,
+          passive_type: reward[:passive_type],
+          passive: reward[:passive],
+          name: reward[:name],
+          icon: reward[:icon],
+          level: reward[:level],
+          max_level: reward[:max_level],
+          rarity: reward[:rarity],
+          rarity_multiplier: reward[:rarity_multiplier]
+        }
+      when :experience, :gold
+        # Опыт и золото применяем напрямую (если есть)
+        if reward[:type] == :experience
+          @player.add_experience(reward[:amount])
+        elsif reward[:type] == :gold
+          @player.gold += reward[:amount]
+        end
       end
-    else
-      # Для обычных сундуков - применяем награды напрямую
-      rewards = generate_chest_rewards
-      level_up = apply_chest_rewards(rewards, chest.x, chest.y)
-      
-      # Показываем экран улучшений только если уровень повысился
-      if level_up
-        show_upgrade_screen
-      end
+    end
+    
+    # Показываем экран улучшений с наградами из сундука
+    if !available.empty?
+      @upgrade_screen.show_vs_upgrades(available, @vs_upgrade_system)
+      @showing_upgrades = true
+      @player.keys_pressed.clear
+      @last_time = Time.now.to_f
     end
     
     # Удаляем сундук из карты после открытия
@@ -1459,8 +1512,8 @@ class Game
     
     barrel.destroy!
     
-    # Бочки дают опыт (меньше, чем сундуки)
-    exp_amount = 10 + rand(30)
+    # Бочки дают опыт (увеличено)
+    exp_amount = 20 + rand(40)  # Было 10 + rand(30), теперь 20-60 опыта
     
     # Бочки дают небольшое количество золота
     gold_amount = 5 + rand(15)

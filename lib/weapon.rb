@@ -127,17 +127,17 @@ class Weapon
     @duration = @base_duration
     
     # Улучшения от уровня оружия - заметные, но сбалансированные
-    # Урон: +3% за уровень (увеличено с 0.5%)
-    damage_bonus = 1.0 + (@level * 0.03)
+    # Урон: +5% за уровень (увеличено с 3%)
+    damage_bonus = 1.0 + (@level * 0.05)
     @damage = (@base_damage * damage_bonus).round
     
-    # Кулдаун: -2% за уровень (увеличено с 0.3%, минимум 0.5 от базового)
-    cooldown_reduction = @level * 0.02
+    # Кулдаун: -3% за уровень (увеличено с 2%, минимум 0.5 от базового)
+    cooldown_reduction = @level * 0.03
     @cooldown = [@base_cooldown * (1.0 - cooldown_reduction), @base_cooldown * 0.5].max
     
-    # Дальность: +2% за уровень (увеличено с 0.5%, максимум +20%)
-    range_bonus = 1.0 + (@level * 0.02)
-    @range = (@base_range * [range_bonus, 1.20].min).round
+    # Дальность: +3% за уровень (увеличено с 2%, максимум +25%)
+    range_bonus = 1.0 + (@level * 0.03)
+    @range = (@base_range * [range_bonus, 1.25].min).round
     
     # Количество снарядов: увеличивается с уровнем для magic_wand и knife
     if @type == :magic_wand || @type == :knife
