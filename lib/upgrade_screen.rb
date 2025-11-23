@@ -486,6 +486,12 @@ class UpgradeScreen
           "Опыт: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
         when :vampirism
           "Вампиризм: +#{current_bonus.round(1) * 100}% → +#{new_bonus.round(1) * 100}%"
+        when :attack_speed
+          # Для скорости атаки показываем уменьшение кулдауна
+          base_cooldown = 0.5
+          current_cooldown = [base_cooldown * (1.0 - current_bonus), 0.1].max
+          new_cooldown = [base_cooldown * (1.0 - new_bonus), 0.1].max
+          "Кулдаун атаки: #{current_cooldown.round(2)}с → #{new_cooldown.round(2)}с"
         when :drop_chance
           # Для дропа показываем общий шанс (базовый 5% + бонус)
           base_drop = 0.05

@@ -90,6 +90,16 @@ class Passive
       @icon = "[⚔]"
       @max_level = 5
       @bonus_per_level = 0.1 # +10% урона за уровень
+    when :regen
+      @name = "Регенерация"
+      @icon = "[♥]"
+      @max_level = 5
+      @bonus_per_level = 0.5 # +0.5 HP/с за уровень
+    when :attack_speed
+      @name = "Скорость атаки"
+      @icon = "[⚡]"
+      @max_level = 5
+      @bonus_per_level = 0.1 # +10% скорости атаки за уровень (уменьшает кулдаун)
     end
   end
 

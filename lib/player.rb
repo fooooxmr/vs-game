@@ -142,6 +142,14 @@ class Player
           10
         end
         @base_damage = (base_hero_damage * (1.0 + passive.get_bonus)).round
+      when :regen
+        # Регенерация здоровья (HP в секунду)
+        @health_regen_rate = passive.get_bonus
+      when :attack_speed
+        # Скорость атаки (уменьшает кулдаун атаки игрока)
+        base_cooldown = 0.5
+        attack_speed_bonus = passive.get_bonus
+        @attack_cooldown = [base_cooldown * (1.0 - attack_speed_bonus), 0.1].max
       end
     end
     

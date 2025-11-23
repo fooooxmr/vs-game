@@ -14,7 +14,7 @@ require_relative 'pickup'
 class Game
   attr_accessor :player, :enemies, :window_width, :window_height, :spawn_timer, :last_spawn_time, :settings,
                 :upgrade_system, :upgrade_screen, :showing_upgrades, :difficulty_multiplier, :game_start_time,
-                :camera, :map, :delta_time
+                :camera, :map, :delta_time, :game_completed
 
   def initialize(settings, hero_data = nil, audio_manager = nil)
     @settings = settings

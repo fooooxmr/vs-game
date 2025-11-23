@@ -4,8 +4,8 @@ require_relative 'passive'
 class VSUpgradeSystem
   WEAPON_TYPES = [:whip, :magic_wand, :knife, :axe, :cross, :garlic].freeze
   
-  # Базовые пассивки (для уровня): ХП, радиус подбора, броня, скорость, удача, опыт, вампиризм, шанс дропа, урон
-  BASE_PASSIVE_TYPES = [:max_health, :magnet, :armor, :move_speed, :luck, :growth, :vampirism, :drop_chance, :damage].freeze
+  # Базовые пассивки (для уровня): ХП, радиус подбора, броня, скорость, удача, опыт, вампиризм, шанс дропа, урон, регенерация, скорость атаки
+  BASE_PASSIVE_TYPES = [:max_health, :magnet, :armor, :move_speed, :luck, :growth, :vampirism, :drop_chance, :damage, :regen, :attack_speed].freeze
   
   # Уникальные пассивки (для сундуков): влияют на все оружия
   UNIQUE_PASSIVE_TYPES = [:weapon_amount, :weapon_area, :weapon_range, :cooldown_reduction, :duration].freeze
@@ -153,23 +153,23 @@ class VSUpgradeSystem
     roll = rand
     
     # 1. Новое оружие (50% шанс, если есть доступные)
-    available_weapons = WEAPON_TYPES.select do |weapon_type|
-      !@player.weapons.find { |w| w.type == weapon_type }
-    end
+      available_weapons = WEAPON_TYPES.select do |weapon_type|
+        !@player.weapons.find { |w| w.type == weapon_type }
+      end
     
     if !available_weapons.empty? && roll < 0.5
       # Даем новое оружие
-      weapon_type = available_weapons.sample
-      weapon = Weapon.new(weapon_type)
-      rarity = determine_rarity(@player.luck || 0)
-      rewards << {
-        type: :new_weapon,
-        weapon_type: weapon_type,
-        weapon: weapon,
-        name: weapon.name,
-        icon: weapon.icon,
-        rarity: rarity,
-        rarity_multiplier: get_rarity_multiplier(rarity)
+        weapon_type = available_weapons.sample
+        weapon = Weapon.new(weapon_type)
+        rarity = determine_rarity(@player.luck || 0)
+        rewards << {
+          type: :new_weapon,
+          weapon_type: weapon_type,
+          weapon: weapon,
+          name: weapon.name,
+          icon: weapon.icon,
+          rarity: rarity,
+          rarity_multiplier: get_rarity_multiplier(rarity)
       }
     elsif !@player.weapons.empty?
       # 2. Усиление существующей пушки на 2 уровня (50% шанс, если нет новых пушек)
@@ -193,49 +193,49 @@ class VSUpgradeSystem
     end
     
     # 3. Особые усиления (уникальные пассивки) - всегда даем одну
-    available_passives = UNIQUE_PASSIVE_TYPES.select do |passive_type|
-      existing = @player.passives.find { |p| p.type == passive_type }
-      !existing || existing.level < existing.max_level
-    end
+      available_passives = UNIQUE_PASSIVE_TYPES.select do |passive_type|
+        existing = @player.passives.find { |p| p.type == passive_type }
+        !existing || existing.level < existing.max_level
+      end
     
-    if !available_passives.empty?
-      passive_type = available_passives.sample
-      existing = @player.passives.find { |p| p.type == passive_type }
-      rarity = determine_rarity(@player.luck || 0)
+      if !available_passives.empty?
+        passive_type = available_passives.sample
+        existing = @player.passives.find { |p| p.type == passive_type }
+        rarity = determine_rarity(@player.luck || 0)
       # В сундуках всегда даем более высокую рарность для пассивок
       rarity = [:rare, :epic, :legendary].sample if rand < 0.7 # 70% шанс на высокую рарность
       
-      if existing
-        rewards << {
-          type: :passive_upgrade,
-          passive_type: passive_type,
-          passive: existing,
-          name: existing.name,
-          icon: existing.icon,
-          level: existing.level,
-          max_level: existing.max_level,
-          rarity: rarity,
-          rarity_multiplier: get_rarity_multiplier(rarity)
-        }
-      else
-        passive = Passive.new(passive_type, get_rarity_multiplier(rarity))
-        rewards << {
-          type: :new_passive,
-          passive_type: passive_type,
-          passive: passive,
-          name: passive.name,
-          icon: passive.icon,
-          rarity: rarity,
-          rarity_multiplier: get_rarity_multiplier(rarity)
-        }
+        if existing
+          rewards << {
+            type: :passive_upgrade,
+            passive_type: passive_type,
+            passive: existing,
+            name: existing.name,
+            icon: existing.icon,
+            level: existing.level,
+            max_level: existing.max_level,
+            rarity: rarity,
+            rarity_multiplier: get_rarity_multiplier(rarity)
+          }
+        else
+          passive = Passive.new(passive_type, get_rarity_multiplier(rarity))
+          rewards << {
+            type: :new_passive,
+            passive_type: passive_type,
+            passive: passive,
+            name: passive.name,
+            icon: passive.icon,
+            rarity: rarity,
+            rarity_multiplier: get_rarity_multiplier(rarity)
+          }
       end
     end
     
     # Сундуки НЕ дают опыт и золото - только ценные предметы
     # Если ничего не дали (все оружия есть и все пассивки максимального уровня), даем хотя бы опыт
     if rewards.empty?
-      rewards << {
-        type: :experience,
+    rewards << {
+      type: :experience,
         amount: 200 + rand(300) # Большой опыт, если все уже есть
       }
     end
@@ -325,19 +325,19 @@ class VSUpgradeSystem
         if upgrade_data[:chest_upgrade]
           levels_to_add = 2
         else
-          # Рарность влияет на количество уровней, которые даются при улучшении
-          # Обычное: +1 уровень, редкое: +1.2 уровня, эпическое: +1.5 уровня, легендарное: +2 уровня
-          levels_to_add = case rarity_multiplier
-          when 1.0
-            1
-          when 1.2
-            1  # Округляем вниз для редкого
-          when 1.5
-            2  # Округляем вверх для эпического
-          when 2.0
-            2  # Легендарное дает +2 уровня
-          else
-            1
+        # Рарность влияет на количество уровней, которые даются при улучшении
+        # Обычное: +1 уровень, редкое: +1.2 уровня, эпическое: +1.5 уровня, легендарное: +2 уровня
+        levels_to_add = case rarity_multiplier
+        when 1.0
+          1
+        when 1.2
+          1  # Округляем вниз для редкого
+        when 1.5
+          2  # Округляем вверх для эпического
+        when 2.0
+          2  # Легендарное дает +2 уровня
+        else
+          1
           end
         end
         
