@@ -1,13 +1,13 @@
 require_relative 'map_object'
 
 class Map
-  attr_accessor :width, :height, :objects, :tile_size, :background_tiles
+  attr_accessor :width, :height, :objects, :tile_size, :background_tiles, :interactive_objects
 
-  MAP_WIDTH = 2000
-  MAP_HEIGHT = 2000
+  MAP_WIDTH = 3333  # Уменьшено еще в 2 раза (было 6667)
+  MAP_HEIGHT = 3333  # Уменьшено еще в 2 раза (было 6667)
   TILE_SIZE = 50
   WALL_THICKNESS = 20
-  BUILDING_COUNT = 8 # Количество мини-зданий
+  BUILDING_COUNT = 25 # Увеличено количество мини-зданий для большой карты
 
   def initialize
     @width = MAP_WIDTH
@@ -17,7 +17,14 @@ class Map
     @background_tiles = []
     @rooms = []
     @buildings = [] # Список зданий
+    @interactive_objects = [] # Кэш интерактивных объектов для миникарты
     generate_map
+    # Кэшируем интерактивные объекты после генерации
+    cache_interactive_objects
+  end
+  
+  def cache_interactive_objects
+    @interactive_objects = @objects.select { |obj| obj.interactive }
   end
 
   def generate_map
@@ -25,6 +32,7 @@ class Map
     @background_tiles.clear
     @rooms.clear
     @buildings.clear
+    @interactive_objects = []
     
     generate_background
     generate_map_border
@@ -32,24 +40,27 @@ class Map
     generate_natural_obstacles
     generate_interactive_objects
     generate_decorations
+    
+    # Кэшируем интерактивные объекты после генерации
+    cache_interactive_objects
   end
   
   def generate_map_border
+    # Создаем сплошные границы карты
     wall_size = WALL_THICKNESS
     
-    (-@width / 2..@width / 2).step(wall_size) do |x|
-      @objects << MapObject.new(x, -@height / 2, :wall)
-    end
+    # Для меньшей карты создаем сплошные границы с меньшим шагом
+    step_size = wall_size # Используем размер стены как шаг для сплошных границ
     
-    (-@width / 2..@width / 2).step(wall_size) do |x|
+    # Верхняя и нижняя границы
+    (-@width / 2..@width / 2).step(step_size) do |x|
+      @objects << MapObject.new(x, -@height / 2, :wall)
       @objects << MapObject.new(x, @height / 2, :wall)
     end
     
-    (-@height / 2..@height / 2).step(wall_size) do |y|
+    # Левая и правая границы
+    (-@height / 2..@height / 2).step(step_size) do |y|
       @objects << MapObject.new(-@width / 2, y, :wall)
-    end
-    
-    (-@height / 2..@height / 2).step(wall_size) do |y|
       @objects << MapObject.new(@width / 2, y, :wall)
     end
   end
@@ -475,6 +486,8 @@ class Map
     generate_lamps_structured
     generate_barrels_structured
     generate_tombstones_structured
+    generate_altars
+    generate_portal
   end
   
   def generate_chests_structured
@@ -504,6 +517,24 @@ class Map
       
       if can_place_object?(chest_x, chest_y, 25)
         @objects << MapObject.new(chest_x, chest_y, :chest)
+        chest_count += 1
+      end
+    end
+    
+    # Дополнительные сундуки в открытых областях (редкость, но не слишком мало)
+    additional_chests = 8  # Уменьшено для баланса
+    additional_chests.times do
+      x = rand(@width) - @width / 2
+      y = rand(@height) - @height / 2
+      
+      distance_from_center = Math.sqrt(x**2 + y**2)
+      next if distance_from_center < 200
+      next if inside_any_room?(x, y)
+      next if inside_any_building?(x, y)
+      
+      if can_place_object?(x, y, 25)
+        @objects << MapObject.new(x, y, :chest)
+        chest_count += 1
       end
     end
   end
@@ -552,7 +583,7 @@ class Map
       end
     end
     
-    # Дополнительные ящики в открытых областях
+    # Дополнительные ящики в открытых областях (редкость, но не слишком мало)
     remaining = [15 - barrel_count, 0].max
     remaining.times do
       x = rand(@width) - @width / 2
@@ -598,7 +629,7 @@ class Map
   end
   
   def generate_tombstones_structured
-    cemetery_count = 4
+    cemetery_count = 30  # Увеличено для большой карты
     cemetery_count.times do
       cemetery_x = rand(@width) - @width / 2
       cemetery_y = rand(@height) - @height / 2
@@ -624,7 +655,7 @@ class Map
   end
 
   def generate_decorations
-    decoration_count = 100
+    decoration_count = 200  # Уменьшено для оптимизации производительности
     
     decoration_count.times do
       x = rand(@width) - @width / 2
@@ -671,8 +702,86 @@ class Map
   end
 
   def get_visible_objects(camera)
-    @objects.select do |obj|
-      camera.is_visible?(obj.x, obj.y, obj.size)
+    # Оптимизация: используем прямой перебор вместо select для лучшей производительности
+    # Преобразуем экранные координаты в мировые для быстрой проверки
+    screen_min_x, screen_min_y = 0, 0
+    screen_max_x, screen_max_y = camera.window_width, camera.window_height
+    
+    world_min_x, world_min_y = camera.screen_to_world(screen_min_x, screen_min_y)
+    world_max_x, world_max_y = camera.screen_to_world(screen_max_x, screen_max_y)
+    
+    # Добавляем запас для объектов, которые частично видны
+    margin = 100
+    world_min_x -= margin
+    world_min_y -= margin
+    world_max_x += margin
+    world_max_y += margin
+    
+    # Быстрая проверка по границам (без вычисления расстояния)
+    # Используем прямой перебор для лучшей производительности
+    visible = []
+    @objects.each do |obj|
+      if obj.x >= world_min_x && obj.x <= world_max_x && 
+         obj.y >= world_min_y && obj.y <= world_max_y
+        visible << obj
+      end
+    end
+    visible
+  end
+
+  def generate_altars
+    # Алтари размещаем в специальных местах (далеко от центра, в труднодоступных местах)
+    altar_count = 15  # Увеличено для большой карты
+    
+    altar_count.times do
+      # Пробуем разместить алтарь
+      attempts = 0
+      placed = false
+      
+      while attempts < 50 && !placed
+        x = rand(@width) - @width / 2
+        y = rand(@height) - @height / 2
+        
+        # Алтари должны быть далеко от центра
+        distance_from_center = Math.sqrt(x**2 + y**2)
+        next if distance_from_center < 300
+        
+        # Не должны быть в зданиях или комнатах
+        next if inside_any_room?(x, y) || inside_any_building?(x, y)
+        
+        # Проверяем, что можно разместить
+        if can_place_object?(x, y, 50)
+          @objects << MapObject.new(x, y, :altar)
+          placed = true
+        end
+        
+        attempts += 1
+      end
+    end
+  end
+  
+  def generate_portal
+    # Портал размещаем в самом дальнем углу карты
+    # Выбираем случайный угол
+    corner = rand(4)
+    case corner
+    when 0 # Верхний левый
+      portal_x = -@width / 2 + 100
+      portal_y = -@height / 2 + 100
+    when 1 # Верхний правый
+      portal_x = @width / 2 - 100
+      portal_y = -@height / 2 + 100
+    when 2 # Нижний левый
+      portal_x = -@width / 2 + 100
+      portal_y = @height / 2 - 100
+    when 3 # Нижний правый
+      portal_x = @width / 2 - 100
+      portal_y = @height / 2 - 100
+    end
+    
+    # Проверяем, что можно разместить
+    if can_place_object?(portal_x, portal_y, 70)
+      @objects << MapObject.new(portal_x, portal_y, :portal)
     end
   end
 

@@ -4,7 +4,7 @@ class Settings
   SETTINGS_FILE = 'settings.json'
 
   attr_accessor :music_volume, :sfx_volume, :fullscreen, :resolution_width, :resolution_height,
-                :spawn_rate, :max_enemies, :difficulty, :player_speed, :enemy_speed
+                :spawn_rate, :max_enemies, :difficulty, :player_speed, :enemy_speed, :difficulty_multiplier_base
 
   def initialize
     load_defaults
@@ -17,11 +17,12 @@ class Settings
     @fullscreen = false
     @resolution_width = 800
     @resolution_height = 600
-    @spawn_rate = 2.0       # секунды между спавном врагов
-    @max_enemies = 20       # максимальное количество врагов
-    @difficulty = 'normal'  # easy, normal, hard
+    @spawn_rate = 1.8       # секунды между спавном врагов
+    @max_enemies = 50       # максимальное количество врагов
+    @difficulty = 'normal'  # easy, normal, hard, nightmare
     @player_speed = 120     # пикселей в секунду
     @enemy_speed = 60       # пикселей в секунду
+    @difficulty_multiplier_base = 1.0  # Базовый множитель сложности
   end
 
   def load_from_file
@@ -39,6 +40,9 @@ class Settings
       @difficulty = data['difficulty'] || @difficulty
       @player_speed = data['player_speed'] || @player_speed
       @enemy_speed = data['enemy_speed'] || @enemy_speed
+      @difficulty_multiplier_base = data['difficulty_multiplier_base'] || @difficulty_multiplier_base
+      # Применяем сложность после загрузки
+      apply_difficulty
     rescue JSON::ParserError, Errno::ENOENT
       # Если файл поврежден, используем значения по умолчанию
       load_defaults
@@ -56,7 +60,8 @@ class Settings
       'max_enemies' => @max_enemies,
       'difficulty' => @difficulty,
       'player_speed' => @player_speed,
-      'enemy_speed' => @enemy_speed
+      'enemy_speed' => @enemy_speed,
+      'difficulty_multiplier_base' => @difficulty_multiplier_base
     }
 
     File.write(SETTINGS_FILE, JSON.pretty_generate(data))
@@ -65,20 +70,40 @@ class Settings
   def apply_difficulty
     case @difficulty
     when 'easy'
-      @spawn_rate = 3.0
-      @max_enemies = 15
-      @enemy_speed = 45
-      @player_speed = 140
+      # Легкая сложность - медленный спавн, меньше врагов, игрок быстрее
+      @spawn_rate = 2.5
+      @max_enemies = 30
+      @enemy_speed = 50
+      @player_speed = 130
+      @difficulty_multiplier_base = 0.8  # -20% к сложности
     when 'normal'
-      @spawn_rate = 2.0
-      @max_enemies = 20
+      # Нормальная сложность - сбалансированная
+      @spawn_rate = 1.8
+      @max_enemies = 50
       @enemy_speed = 60
       @player_speed = 120
+      @difficulty_multiplier_base = 1.0  # Базовая сложность
     when 'hard'
-      @spawn_rate = 1.0
-      @max_enemies = 30
+      # Сложная - быстрый спавн, больше врагов
+      @spawn_rate = 1.2
+      @max_enemies = 80
+      @enemy_speed = 70
+      @player_speed = 110
+      @difficulty_multiplier_base = 1.3  # +30% к сложности
+    when 'nightmare'
+      # Кошмар - очень сложно
+      @spawn_rate = 0.8
+      @max_enemies = 120
       @enemy_speed = 80
       @player_speed = 100
+      @difficulty_multiplier_base = 1.6  # +60% к сложности
+    else
+      # По умолчанию нормальная
+      @spawn_rate = 1.8
+      @max_enemies = 50
+      @enemy_speed = 60
+      @player_speed = 120
+      @difficulty_multiplier_base = 1.0
     end
   end
 

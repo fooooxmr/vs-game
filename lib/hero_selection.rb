@@ -1461,10 +1461,10 @@ class HeroSelection
     # Статистика в красивом формате
     stats_y = y + 200 + desc_lines.length * 20 + 10
     stats = [
-      ["❤️", "Здоровье", hero_data[:stats][:health]],
-      ["🏃", "Скорость", hero_data[:stats][:speed]],
-      ["⚔️", "Урон", hero_data[:stats][:damage]],
-      ["🛡️", "Броня", "#{(hero_data[:stats][:armor] * 100).to_i}%"]
+      ["[H]", "Здоровье", hero_data[:stats][:health]],
+      ["[S]", "Скорость", hero_data[:stats][:speed]],
+      ["[W]", "Урон", hero_data[:stats][:damage]],
+      ["[D]", "Броня", "#{(hero_data[:stats][:armor] * 100).to_i}%"]
     ]
 
     stats.each_with_index do |(icon, label, value), i|
@@ -1489,7 +1489,7 @@ class HeroSelection
 
     weapon_y = stats_y + stats.length * 25 + 10
     @texts["hero_#{index}_weapon".to_sym] = Text.new(
-      "⚔️ Стартовое оружие: #{weapon_name}",
+      "[W] Стартовое оружие: #{weapon_name}",
       x: x + card_width / 2,
       y: weapon_y,
       size: 16,

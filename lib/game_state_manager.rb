@@ -3,6 +3,7 @@ require_relative 'menu'
 require_relative 'settings_screen'
 require_relative 'game'
 require_relative 'hero_selection'
+require_relative 'audio_manager'
 
 class GameStateManager
   STATES = {
@@ -12,12 +13,13 @@ class GameStateManager
     settings: :settings
   }.freeze
 
-  attr_accessor :current_state, :settings, :menu, :settings_screen, :game, :window_width, :window_height, :hero_selection, :selected_hero
+  attr_accessor :current_state, :settings, :menu, :settings_screen, :game, :window_width, :window_height, :hero_selection, :selected_hero, :audio_manager
 
   def initialize(window_width, window_height)
     @window_width = window_width
     @window_height = window_height
     @settings = Settings.new
+    @audio_manager = AudioManager.new(@settings)
     @current_state = :menu
     @selected_hero = nil
     initialize_state(:menu)
@@ -32,7 +34,7 @@ class GameStateManager
     when :settings
       @settings_screen = SettingsScreen.new(@window_width, @window_height, @settings)
     when :game
-      @game = Game.new(@settings, @selected_hero)
+      @game = Game.new(@settings, @selected_hero, @audio_manager)
     end
   end
 
@@ -82,8 +84,10 @@ class GameStateManager
     when :game
       @game.handle_key_down(key)
       # ESC для возврата в меню (только если игрок мертв или не показываются улучшения)
-      if key == 'escape' && (!@game.player.alive? || !@game.showing_upgrades)
+      if key == 'escape' && (!@game.player.alive? || !@game.showing_upgrades || @game.game_completed)
         switch_to_state(:menu)
+        # Обновляем отображение рекорда в меню
+        @menu.refresh_high_score if @menu
       end
     end
   end
@@ -124,6 +128,7 @@ class GameStateManager
     case action
     when :back
       @settings.save_to_file
+      @audio_manager.update_settings(@settings) if @audio_manager
       switch_to_state(:menu)
     end
   end
@@ -141,7 +146,26 @@ class GameStateManager
       @settings_screen&.remove
       @settings_screen = nil
     when :game
-      @game&.remove_shapes
+      # Полная очистка игры перед переключением состояния
+      if @game
+        @game.remove_shapes
+        # Дополнительная очистка: убеждаемся, что все враги удалены
+        if @game.enemies
+          @game.enemies.each do |enemy|
+            # Удаляем health bars
+            enemy.instance_variable_get(:@health_bar_bg)&.remove if enemy.instance_variable_defined?(:@health_bar_bg)
+            enemy.instance_variable_get(:@health_bar)&.remove if enemy.instance_variable_defined?(:@health_bar)
+            # Удаляем спрайт
+            if enemy.sprite
+              enemy.sprite.remove if enemy.sprite.respond_to?(:remove)
+              enemy.sprite = nil
+            end
+            enemy.remove if enemy.respond_to?(:remove)
+          end
+          @game.enemies.clear
+        end
+        @game.alive_enemies_cache = nil if @game.respond_to?(:alive_enemies_cache=)
+      end
       @game = nil
     end
 

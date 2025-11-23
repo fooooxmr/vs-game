@@ -8,7 +8,7 @@ class SpriteRenderer
     damage: :damage
   }.freeze
 
-  attr_accessor :x, :y, :current_state, :facing_direction, :size, :attack_range
+  attr_accessor :x, :y, :current_state, :facing_direction, :size, :attack_range, :shapes
 
   def initialize(x, y, size, type = :player)
     @x = x
@@ -49,7 +49,28 @@ class SpriteRenderer
       @animations[:walk] = Animation.new([0, 1, 2, 1], 0.1, true)
       @animations[:attack] = Animation.new([0, 1, 2, 0], 0.06, false)
       @animations[:damage] = Animation.new([0], 0.2, false)
-    else # enemy
+    when :skeleton_enemy, :bat_enemy, :ghost_enemy, :zombie_enemy, :knight_enemy, :mage_enemy, :elite_knight_enemy, :elite_mage_enemy, :boss_enemy
+      # Разные анимации для разных типов врагов
+      case @type
+      when :bat_enemy
+        @animations[:idle] = Animation.new([0, 1], 0.3, true)
+        @animations[:walk] = Animation.new([0, 1, 2, 1], 0.08, true)
+        @animations[:attack] = Animation.new([0, 1, 0], 0.1, false)
+      when :ghost_enemy
+        @animations[:idle] = Animation.new([0, 1], 0.6, true)
+        @animations[:walk] = Animation.new([0, 1, 2, 1], 0.2, true)
+        @animations[:attack] = Animation.new([0, 1, 2, 0], 0.15, false)
+      when :elite_knight_enemy, :elite_mage_enemy, :boss_enemy
+        @animations[:idle] = Animation.new([0, 1], 0.5, true)
+        @animations[:walk] = Animation.new([0, 1, 2, 1], 0.12, true)
+        @animations[:attack] = Animation.new([0, 1, 2, 3, 0], 0.1, false)
+      else
+        @animations[:idle] = Animation.new([0, 1], 0.5, true)
+        @animations[:walk] = Animation.new([0, 1, 2, 1], 0.15, true)
+        @animations[:attack] = Animation.new([0, 1, 2, 0], 0.1, false)
+      end
+      @animations[:damage] = Animation.new([0], 0.2, false)
+    else # enemy (старый тип для совместимости)
       @animations[:idle] = Animation.new([0, 1], 0.5, true)
       @animations[:walk] = Animation.new([0, 1, 2, 1], 0.15, true)
       @animations[:attack] = Animation.new([0, 1, 2, 0], 0.1, false)
@@ -68,6 +89,24 @@ class SpriteRenderer
     when :rogue
       create_rogue_shapes
       create_slash_effect
+    when :skeleton_enemy
+      create_skeleton_enemy_shapes
+    when :bat_enemy
+      create_bat_enemy_shapes
+    when :ghost_enemy
+      create_ghost_enemy_shapes
+    when :zombie_enemy
+      create_zombie_enemy_shapes
+    when :knight_enemy
+      create_knight_enemy_shapes
+    when :mage_enemy
+      create_mage_enemy_shapes
+    when :elite_knight_enemy
+      create_elite_knight_enemy_shapes
+    when :elite_mage_enemy
+      create_elite_mage_enemy_shapes
+    when :boss_enemy
+      create_boss_enemy_shapes
     else
       create_monster_shapes
     end
@@ -77,23 +116,29 @@ class SpriteRenderer
     # Эффект слеша (разрез мечом) - используем прямоугольники для более яркого эффекта
     @shapes[:slash_effect] = []
     # Создаем больше прямоугольников для более заметного эффекта
+    # Z-индекс высокий, чтобы слеш был поверх всех спрайтов
+    base_z = @type == :player || @type == :knight ? 700 : 600
     15.times do |i|
       @shapes[:slash_effect] << Rectangle.new(
         x: @x, y: @y,
         width: 3,
         height: 3,
-        color: '#FFFFFF'
+        color: '#FFFFFF',
+        z: base_z + i
       )
     end
   end
 
   def create_knight_shapes
+    # Z-индекс для игрока (выше врагов, ниже UI)
+    base_z = 600
     # Шлем
     @shapes[:helmet] = Circle.new(
       x: @x,
       y: @y - @size / 2 - @size * 0.15,
       radius: @size * 0.25,
-      color: '#C0C0C0'
+      color: '#C0C0C0',
+      z: base_z + 5
     )
     
     # Визор шлема
@@ -102,7 +147,8 @@ class SpriteRenderer
       y: @y - @size / 2 - @size * 0.1,
       width: @size * 0.4,
       height: @size * 0.15,
-      color: '#2C2C2C'
+      color: '#2C2C2C',
+      z: base_z + 6
     )
 
     # Тело (кираса)
@@ -111,7 +157,8 @@ class SpriteRenderer
       y: @y - @size * 0.2,
       width: @size * 0.7,
       height: @size * 0.6,
-      color: '#A0A0A0'
+      color: '#A0A0A0',
+      z: base_z + 1
     )
 
     # Нагрудник
@@ -120,7 +167,8 @@ class SpriteRenderer
       y: @y - @size * 0.15,
       width: @size * 0.5,
       height: @size * 0.4,
-      color: '#D0D0D0'
+      color: '#D0D0D0',
+      z: base_z + 2
     )
 
     # Плечи (наплечники)
@@ -129,14 +177,16 @@ class SpriteRenderer
       y: @y - @size * 0.25,
       width: @size * 0.2,
       height: @size * 0.15,
-      color: '#808080'
+      color: '#808080',
+      z: base_z + 4
     )
     @shapes[:shoulder_right] = Rectangle.new(
       x: @x + @size * 0.3,
       y: @y - @size * 0.25,
       width: @size * 0.2,
       height: @size * 0.15,
-      color: '#808080'
+      color: '#808080',
+      z: base_z + 4
     )
 
     # Руки
@@ -145,14 +195,16 @@ class SpriteRenderer
       y: @y - @size * 0.1,
       width: @size * 0.12,
       height: @size * 0.5,
-      color: '#B0B0B0'
+      color: '#B0B0B0',
+      z: base_z + 3
     )
     @shapes[:arm_right] = Rectangle.new(
       x: @x + @size * 0.33,
       y: @y - @size * 0.1,
       width: @size * 0.12,
       height: @size * 0.5,
-      color: '#B0B0B0'
+      color: '#B0B0B0',
+      z: base_z + 3
     )
 
     # Щит
@@ -161,13 +213,15 @@ class SpriteRenderer
       y: @y - @size * 0.05,
       width: @size * 0.2,
       height: @size * 0.5,
-      color: '#8B4513'
+      color: '#8B4513',
+      z: base_z + 2
     )
     @shapes[:shield_center] = Circle.new(
       x: @x - @size * 0.4,
       y: @y + @size * 0.15,
       radius: @size * 0.08,
-      color: '#654321'
+      color: '#654321',
+      z: base_z + 3
     )
 
     # Меч (рукоять)
@@ -176,7 +230,8 @@ class SpriteRenderer
       y: @y - @size * 0.05,
       width: @size * 0.08,
       height: @size * 0.25,
-      color: '#4A4A4A'
+      color: '#4A4A4A',
+      z: base_z + 4
     )
 
     # Меч (клинок)
@@ -185,7 +240,8 @@ class SpriteRenderer
       y: @y - @size * 0.3,
       width: @size * 0.05,
       height: @size * 0.4,
-      color: '#E0E0E0'
+      color: '#E0E0E0',
+      z: base_z + 5
     )
 
     # Ноги
@@ -194,14 +250,16 @@ class SpriteRenderer
       y: @y + @size * 0.4,
       width: @size * 0.2,
       height: @size * 0.3,
-      color: '#707070'
+      color: '#707070',
+      z: base_z + 1
     )
     @shapes[:leg_right] = Rectangle.new(
       x: @x + @size * 0.05,
       y: @y + @size * 0.4,
       width: @size * 0.2,
       height: @size * 0.3,
-      color: '#707070'
+      color: '#707070',
+      z: base_z + 1
     )
 
     # Сапоги
@@ -210,7 +268,8 @@ class SpriteRenderer
       y: @y + @size * 0.7,
       width: @size * 0.2,
       height: @size * 0.15,
-      color: '#505050'
+      color: '#505050',
+      z: base_z + 2
     )
     @shapes[:boot_right] = Rectangle.new(
       x: @x + @size * 0.05,
@@ -222,18 +281,22 @@ class SpriteRenderer
   end
 
   def create_mage_shapes
+    # Z-индекс для игрока (выше врагов, ниже UI)
+    base_z = 600
     # Голова (с капюшоном)
     @shapes[:head] = Circle.new(
       x: @x,
       y: @y - @size * 0.2,
       radius: @size * 0.2,
-      color: '#F5DEB3'
+      color: '#F5DEB3',
+      z: base_z + 5
     )
     @shapes[:hood] = Circle.new(
       x: @x,
       y: @y - @size * 0.25,
       radius: @size * 0.25,
-      color: '#4B0082'
+      color: '#4B0082',
+      z: base_z + 4
     )
 
     # Тело (мантија)
@@ -242,7 +305,8 @@ class SpriteRenderer
       y: @y - @size * 0.1,
       width: @size * 0.4,
       height: @size * 0.5,
-      color: '#6A0DAD'
+      color: '#6A0DAD',
+      z: base_z + 1
     )
 
     # Руки с посохом
@@ -251,14 +315,16 @@ class SpriteRenderer
       y: @y,
       width: @size * 0.1,
       height: @size * 0.3,
-      color: '#F5DEB3'
+      color: '#F5DEB3',
+      z: base_z + 3
     )
     @shapes[:arm_right] = Rectangle.new(
       x: @x + @size * 0.25,
       y: @y - @size * 0.1,
       width: @size * 0.08,
       height: @size * 0.5,
-      color: '#F5DEB3'
+      color: '#F5DEB3',
+      z: base_z + 3
     )
 
     # Посох
@@ -267,13 +333,15 @@ class SpriteRenderer
       y: @y - @size * 0.4,
       width: @size * 0.05,
       height: @size * 0.6,
-      color: '#8B4513'
+      color: '#8B4513',
+      z: base_z + 4
     )
     @shapes[:staff_crystal] = Circle.new(
       x: @x + @size * 0.325,
       y: @y - @size * 0.5,
       radius: @size * 0.08,
-      color: '#00FFFF'
+      color: '#00FFFF',
+      z: base_z + 5
     )
 
     # Ноги
@@ -282,30 +350,36 @@ class SpriteRenderer
       y: @y + @size * 0.4,
       width: @size * 0.15,
       height: @size * 0.3,
-      color: '#4B0082'
+      color: '#4B0082',
+      z: base_z + 1
     )
     @shapes[:leg_right] = Rectangle.new(
       x: @x,
       y: @y + @size * 0.4,
       width: @size * 0.15,
       height: @size * 0.3,
-      color: '#4B0082'
+      color: '#4B0082',
+      z: base_z + 1
     )
   end
 
   def create_rogue_shapes
+    # Z-индекс для игрока (выше врагов, ниже UI)
+    base_z = 600
     # Голова (с капюшоном)
     @shapes[:head] = Circle.new(
       x: @x,
       y: @y - @size * 0.2,
       radius: @size * 0.18,
-      color: '#F5DEB3'
+      color: '#F5DEB3',
+      z: base_z + 5
     )
     @shapes[:hood] = Circle.new(
       x: @x,
       y: @y - @size * 0.22,
       radius: @size * 0.22,
-      color: '#2F2F2F'
+      color: '#2F2F2F',
+      z: base_z + 4
     )
 
     # Тело (кожаная броня)
@@ -314,7 +388,8 @@ class SpriteRenderer
       y: @y - @size * 0.05,
       width: @size * 0.36,
       height: @size * 0.45,
-      color: '#654321'
+      color: '#654321',
+      z: base_z + 1
     )
 
     # Руки с кинжалами
@@ -323,14 +398,16 @@ class SpriteRenderer
       y: @y,
       width: @size * 0.1,
       height: @size * 0.35,
-      color: '#F5DEB3'
+      color: '#F5DEB3',
+      z: base_z + 3
     )
     @shapes[:arm_right] = Rectangle.new(
       x: @x + @size * 0.2,
       y: @y,
       width: @size * 0.1,
       height: @size * 0.35,
-      color: '#F5DEB3'
+      color: '#F5DEB3',
+      z: base_z + 3
     )
 
     # Кинжалы
@@ -339,14 +416,16 @@ class SpriteRenderer
       y: @y + @size * 0.25,
       width: @size * 0.05,
       height: @size * 0.2,
-      color: '#C0C0C0'
+      color: '#C0C0C0',
+      z: base_z + 4
     )
     @shapes[:dagger_right] = Rectangle.new(
       x: @x + @size * 0.3,
       y: @y + @size * 0.25,
       width: @size * 0.05,
       height: @size * 0.2,
-      color: '#C0C0C0'
+      color: '#C0C0C0',
+      z: base_z + 4
     )
 
     # Ноги
@@ -355,14 +434,16 @@ class SpriteRenderer
       y: @y + @size * 0.4,
       width: @size * 0.12,
       height: @size * 0.3,
-      color: '#2F2F2F'
+      color: '#2F2F2F',
+      z: base_z + 1
     )
     @shapes[:leg_right] = Rectangle.new(
       x: @x,
       y: @y + @size * 0.4,
       width: @size * 0.12,
       height: @size * 0.3,
-      color: '#2F2F2F'
+      color: '#2F2F2F',
+      z: base_z + 1
     )
   end
 
@@ -692,6 +773,11 @@ class SpriteRenderer
         @slash_angle = attack_angle
         @slash_visible = true
         @slash_time = @slash_duration
+      elsif !@slash_visible
+        # Если атака началась без угла, используем текущее направление или 0
+        @slash_angle = 0
+        @slash_visible = true
+        @slash_time = @slash_duration
       end
     elsif is_moving
       set_state(:walk)
@@ -722,7 +808,9 @@ class SpriteRenderer
     end
 
     update_sprite_animation
-    update_all_positions # Всегда обновляем позиции всех элементов
+    # Обновляем эффект слеша каждый кадр
+    update_slash_effect
+    # Позиции обновляются в draw с учетом камеры, не здесь
   end
 
   def update_all_positions
@@ -819,10 +907,66 @@ class SpriteRenderer
   end
 
   def update_monster_positions
-    # Базовые позиции для монстров
+    # Обновляем позиции в зависимости от типа монстра
+    case @type
+    when :bat_enemy
+      update_bat_positions
+    when :ghost_enemy
+      update_ghost_positions
+    when :skeleton_enemy, :zombie_enemy, :knight_enemy, :mage_enemy, :elite_knight_enemy, :elite_mage_enemy, :boss_enemy
+      # Эти типы используют существующие методы
+      update_skeleton_animation(0, @y - @size / 2) if @type == :skeleton_enemy
+      update_zombie_animation(0, @y - @size / 2) if @type == :zombie_enemy
+    else
+      # Базовые позиции для монстров
+      # Для гоблина обновляем все фигуры включая уши
+      if @monster_type == :goblin
+        base_y = @y - @size / 2
+        frame = @animations[@current_state] ? @animations[@current_state].get_current_frame : 0
+        update_goblin_animation(frame, base_y)
+      else
+        @shapes[:head]&.x = @x
+        @shapes[:body]&.x = @x - @size * 0.3 if @shapes[:body]
+        @shapes[:body]&.y = @y - @size * 0.1 if @shapes[:body]
+      end
+    end
+  end
+  
+  def update_bat_positions
+    @shapes[:body]&.x = @x
+    @shapes[:body]&.y = @y
     @shapes[:head]&.x = @x
-    @shapes[:body]&.x = @x - @size * 0.3 if @shapes[:body]
-    @shapes[:body]&.y = @y - @size * 0.1 if @shapes[:body]
+    @shapes[:head]&.y = @y - @size * 0.2
+    
+    # Обновляем позиции крыльев относительно тела
+    @wing_offset ||= 0
+    if @shapes[:wing_left]
+      @shapes[:wing_left].x1 = @x - @size * 0.3
+      @shapes[:wing_left].y1 = @y
+      @shapes[:wing_left].x2 = @x - @size * 0.5
+      @shapes[:wing_left].y2 = @y - @size * 0.3 + @wing_offset
+      @shapes[:wing_left].x3 = @x - @size * 0.2
+      @shapes[:wing_left].y3 = @y - @size * 0.2 + @wing_offset
+    end
+    if @shapes[:wing_right]
+      @shapes[:wing_right].x1 = @x + @size * 0.3
+      @shapes[:wing_right].y1 = @y
+      @shapes[:wing_right].x2 = @x + @size * 0.5
+      @shapes[:wing_right].y2 = @y - @size * 0.3 + @wing_offset
+      @shapes[:wing_right].x3 = @x + @size * 0.2
+      @shapes[:wing_right].y3 = @y - @size * 0.2 + @wing_offset
+    end
+  end
+  
+  def update_ghost_positions
+    @shapes[:body]&.x = @x
+    @shapes[:body]&.y = @y
+    @shapes[:head]&.x = @x
+    @shapes[:head]&.y = @y - @size * 0.3
+    @shapes[:eye_left]&.x = @x - @size * 0.15
+    @shapes[:eye_left]&.y = @y - @size * 0.3
+    @shapes[:eye_right]&.x = @x + @size * 0.15
+    @shapes[:eye_right]&.y = @y - @size * 0.3
   end
 
   def update_sprite_animation
@@ -984,138 +1128,295 @@ class SpriteRenderer
       @shapes[:chest].color = '#D0D0D0'
     end
 
-    # Визуализация слеша мечом
-    update_slash_effect
+    # Визуализация слеша мечом вызывается из update
   end
 
   def update_slash_effect
-    if @slash_visible && (@type == :player || @type == :knight) && @shapes[:slash_effect]
-      # Прозрачность зависит от оставшегося времени
-      opacity = (@slash_time / @slash_duration)
+    # Проверяем, что слеш должен быть виден и фигуры существуют
+    return unless @slash_visible
+    return unless @type == :player || @type == :knight
+    return unless @shapes[:slash_effect]
+    return if @shapes[:slash_effect].empty?
+    return if @slash_time <= 0
+    
+    # Прозрачность зависит от оставшегося времени
+    opacity = (@slash_time / @slash_duration)
+    
+    # Длина слеша зависит от дальности атаки
+    slash_length = @attack_range || (@size * 2.5)
+    
+    # Начальная точка слеша (у меча)
+    sword_x = @x + @size * 0.35
+    sword_y = @y - @size * 0.05
+    
+    # Создаем эффект слеша из нескольких прямоугольников, образующих дугу
+    @shapes[:slash_effect].each_with_index do |rect, i|
+      # Позиция вдоль слеша (от начала к концу)
+      progress = i.to_f / (@shapes[:slash_effect].length - 1)
       
-      # Длина слеша зависит от дальности атаки
-      slash_length = @attack_range || (@size * 2.5)
+      # Создаем дугообразный след меча
+      # Угол слеша с небольшим смещением для эффекта дуги
+      arc_angle = @slash_angle + Math.sin(progress * Math::PI) * 0.4
       
-      # Начальная точка слеша (у меча)
-      sword_x = @x + @size * 0.35
-      sword_y = @y - @size * 0.05
+      # Позиция прямоугольника вдоль слеша
+      distance = @size * 0.3 + progress * slash_length
+      rect_x = sword_x + Math.cos(arc_angle) * distance
+      rect_y = sword_y + Math.sin(arc_angle) * distance
       
-      # Создаем эффект слеша из нескольких прямоугольников, образующих дугу
-      @shapes[:slash_effect].each_with_index do |rect, i|
-        # Позиция вдоль слеша (от начала к концу)
-        progress = i.to_f / (@shapes[:slash_effect].length - 1)
-        
-        # Создаем дугообразный след меча
-        # Угол слеша с небольшим смещением для эффекта дуги
-        arc_angle = @slash_angle + Math.sin(progress * Math::PI) * 0.4
-        
-        # Позиция прямоугольника вдоль слеша
-        distance = @size * 0.3 + progress * slash_length
-        rect_x = sword_x + Math.cos(arc_angle) * distance
-        rect_y = sword_y + Math.sin(arc_angle) * distance
-        
-        # Увеличиваем размер прямоугольников для большей заметности
-        # Размер больше в центре, меньше по краям
-        base_size = @size * 0.12
-        size_multiplier = (1 - (progress - 0.5).abs * 2)
-        rect_width = base_size * size_multiplier * opacity * 1.5
-        rect_height = @size * 0.5 * opacity * 1.3
-        
-        # Позиционируем прямоугольник перпендикулярно направлению слеша
-        perp_angle = arc_angle + Math::PI / 2
-        
-        rect.x = rect_x - rect_width / 2
-        rect.y = rect_y - rect_height / 2
-        rect.width = rect_width
-        rect.height = rect_height
-        
-        # Более яркие и заметные цвета
-        if opacity > 0.8
-          rect.color = '#FFFFFF' # Яркий белый
-        elsif opacity > 0.6
-          rect.color = '#FFFF88' # Яркий желтый
-        elsif opacity > 0.4
-          rect.color = '#FFFF00' # Желтый
-        elsif opacity > 0.2
-          rect.color = '#FFAA00' # Оранжевый
-        else
-          rect.color = '#FF6600' # Темно-оранжевый
-        end
-      end
-    elsif @shapes[:slash_effect]
-      # Скрываем слеш, когда он не виден
-      @shapes[:slash_effect].each do |rect|
-        rect.x = @x
-        rect.y = @y
-        rect.width = 0
-        rect.height = 0
+      # Увеличиваем размер прямоугольников для большей заметности
+      # Размер больше в центре, меньше по краям
+      base_size = @size * 0.12
+      size_multiplier = (1 - (progress - 0.5).abs * 2)
+      rect_width = base_size * size_multiplier * opacity * 1.5
+      rect_height = @size * 0.5 * opacity * 1.3
+      
+      # Позиционируем прямоугольник перпендикулярно направлению слеша
+      perp_angle = arc_angle + Math::PI / 2
+      
+      rect.x = rect_x - rect_width / 2
+      rect.y = rect_y - rect_height / 2
+      rect.width = rect_width
+      rect.height = rect_height
+      
+      # Более яркие и заметные цвета
+      if opacity > 0.8
+        rect.color = '#FFFFFF' # Яркий белый
+      elsif opacity > 0.6
+        rect.color = '#FFFF88' # Яркий желтый
+      elsif opacity > 0.4
+        rect.color = '#FFFF00' # Желтый
+      elsif opacity > 0.2
+        rect.color = '#FFAA00' # Оранжевый
+      else
+        rect.color = '#FF6600' # Темно-оранжевый
       end
     end
+  rescue => e
+    # Если что-то пошло не так, просто скрываем слеш
+    @slash_visible = false
+    @slash_time = 0
   end
 
   def update_monster_animation(frame)
-    base_y = @y - @size / 2
-
-    case @monster_type
-    when :goblin
-      update_goblin_animation(frame, base_y)
-    when :skeleton
-      update_skeleton_animation(frame, base_y)
-    when :zombie
-      update_zombie_animation(frame, base_y)
+    # ВАЖНО: Здесь обновляем только анимацию (цвета, состояния), НЕ позиции!
+    # Позиции обновляются в update_all_positions с экранными координатами
+    
+    case @type
+    when :bat_enemy
+      update_bat_animation(frame)
+    when :ghost_enemy
+      update_ghost_animation(frame)
+    when :skeleton_enemy, :zombie_enemy, :knight_enemy, :mage_enemy, :elite_knight_enemy, :elite_mage_enemy, :boss_enemy
+      # Для скелетов и зомби обновляем только цвета при уроне, позиции обновятся в update_all_positions
+      # Анимация свечения для элитных и боссов
+      update_elite_glow_animation(frame) if [:elite_knight_enemy, :elite_mage_enemy, :boss_enemy].include?(@type)
+    else
+      # Старые типы монстров - позиции обновляются в update_all_positions
+      # Здесь только анимация (цвета, состояния)
+      # base_y вычисляется в update_all_positions, не здесь
     end
 
     # Мигание при получении урона
     if @current_state == :damage
       flash = (@damage_flash_time / @damage_flash_duration * 2).round % 2 == 0
-      if @monster_type == :goblin
-        @shapes[:body].color = flash ? '#FF4444' : '#5A8C69'
-      elsif @monster_type == :skeleton
-        @shapes[:spine].color = flash ? '#FF8888' : '#E0E0E0'
-      elsif @monster_type == :zombie
-        @shapes[:body].color = flash ? '#FF4444' : '#6B5B4A'
+      case @type
+      when :bat_enemy
+        @shapes[:body]&.color = flash ? '#FF4444' : '#2A2A2A'
+      when :ghost_enemy
+        @shapes[:body]&.color = flash ? [255, 200, 200, 0.9] : [255, 255, 255, 0.7]
+      when :skeleton_enemy, :knight_enemy, :mage_enemy, :boss_enemy
+        @shapes[:spine]&.color = flash ? '#FF8888' : '#E0E0E0' if @shapes[:spine]
+      when :zombie_enemy
+        @shapes[:body]&.color = flash ? '#FF4444' : '#6B5B4A'
+      else
+        if @monster_type == :goblin
+          @shapes[:body]&.color = flash ? '#FF4444' : '#5A8C69'
+        elsif @monster_type == :skeleton
+          @shapes[:spine]&.color = flash ? '#FF8888' : '#E0E0E0'
+        elsif @monster_type == :zombie
+          @shapes[:body]&.color = flash ? '#FF4444' : '#6B5B4A'
+        end
+      end
+    end
+
+    # Мигание при получении урона
+    if @current_state == :damage
+      flash = (@damage_flash_time / @damage_flash_duration * 2).round % 2 == 0
+      case @type
+      when :bat_enemy
+        @shapes[:body]&.color = flash ? '#FF4444' : '#2A2A2A'
+      when :ghost_enemy
+        @shapes[:body]&.color = flash ? [255, 200, 200, 0.9] : [255, 255, 255, 0.7]
+      when :skeleton_enemy, :knight_enemy, :mage_enemy, :boss_enemy
+        @shapes[:spine]&.color = flash ? '#FF8888' : '#E0E0E0' if @shapes[:spine]
+      when :zombie_enemy
+        @shapes[:body]&.color = flash ? '#FF4444' : '#6B5B4A'
+      else
+        if @monster_type == :goblin
+          @shapes[:body]&.color = flash ? '#FF4444' : '#5A8C69'
+        elsif @monster_type == :skeleton
+          @shapes[:spine]&.color = flash ? '#FF8888' : '#E0E0E0'
+        elsif @monster_type == :zombie
+          @shapes[:body]&.color = flash ? '#FF4444' : '#6B5B4A'
+        end
       end
     end
   end
+  
+  def update_elite_glow_animation(frame)
+    # Пульсирующее свечение для элитных мобов и боссов
+    time = frame * 0.1 # Замедляем анимацию
+    pulse = 0.3 + Math.sin(time * Math::PI * 2) * 0.15
+    
+    if @shapes[:glow]
+      case @type
+      when :elite_knight_enemy
+        @shapes[:glow].color = [255, 215, 0, pulse]
+      when :elite_mage_enemy
+        @shapes[:glow].color = [138, 43, 226, pulse]
+      when :boss_enemy
+        @shapes[:glow].color = [255, 100, 100, pulse]
+      end
+    end
+    # Внешнее свечение для босса
+    if @shapes[:glow_outer]
+      outer_pulse = 0.2 + Math.sin(time * Math::PI * 2) * 0.1
+      @shapes[:glow_outer].color = [255, 0, 0, outer_pulse]
+    end
+  end
+  
+  def update_bat_animation(frame)
+    # Анимация крыльев летучей мыши
+    # ВАЖНО: Позиции обновляются в update_all_positions, здесь только анимация
+    # Но для крыльев нужно обновлять относительные позиции
+    if @current_state == :walk
+      @wing_offset = Math.sin(frame * Math::PI * 2) * @size * 0.1
+    else
+      @wing_offset = 0
+    end
+    # Позиции крыльев обновятся в update_bat_positions, который вызывается из update_all_positions
+  end
+  
+  def update_ghost_animation(frame)
+    # Призрак слегка покачивается
+    # ВАЖНО: Позиции обновляются в update_all_positions, здесь только анимация
+    if @current_state == :walk
+      @float_offset = Math.sin(frame * Math::PI) * @size * 0.05
+    else
+      @float_offset = 0
+    end
+    # Позиции обновятся в update_ghost_positions, который вызывается из update_all_positions
+  end
 
   def update_goblin_animation(frame, base_y)
+    # ВАЖНО: Этот метод вызывается из update_all_positions, когда @x и @y уже экранные координаты
     walk_offset = @current_state == :walk ? Math.sin(frame * Math::PI) * @size * 0.1 : 0
 
-    @shapes[:head].x = @x
-    @shapes[:head].y = base_y - @size * 0.1
+    # Обновляем ВСЕ фигуры гоблина с экранными координатами
+    @shapes[:head]&.x = @x
+    @shapes[:head]&.y = base_y - @size * 0.1
 
-    @shapes[:body].x = @x - @size * 0.3
-    @shapes[:body].y = @y - @size * 0.1
+    # Уши
+    @shapes[:ear_left]&.x1 = @x - @size * 0.25
+    @shapes[:ear_left]&.y1 = base_y - @size * 0.15
+    @shapes[:ear_left]&.x2 = @x - @size * 0.35
+    @shapes[:ear_left]&.y2 = base_y - @size * 0.3
+    @shapes[:ear_left]&.x3 = @x - @size * 0.15
+    @shapes[:ear_left]&.y3 = base_y - @size * 0.25
+    
+    @shapes[:ear_right]&.x1 = @x + @size * 0.25
+    @shapes[:ear_right]&.y1 = base_y - @size * 0.15
+    @shapes[:ear_right]&.x2 = @x + @size * 0.35
+    @shapes[:ear_right]&.y2 = base_y - @size * 0.3
+    @shapes[:ear_right]&.x3 = @x + @size * 0.15
+    @shapes[:ear_right]&.y3 = base_y - @size * 0.25
 
-    @shapes[:arm_left].x = @x - @size * 0.4
-    @shapes[:arm_left].y = @y - @size * 0.05 - walk_offset
-    @shapes[:arm_right].x = @x + @size * 0.25
-    @shapes[:arm_right].y = @y - @size * 0.05 + walk_offset
+    # Глаза
+    @shapes[:eye_left]&.x = @x - @size * 0.12
+    @shapes[:eye_left]&.y = base_y - @size * 0.08
+    @shapes[:eye_right]&.x = @x + @size * 0.12
+    @shapes[:eye_right]&.y = base_y - @size * 0.08
 
-    @shapes[:leg_left].x = @x - @size * 0.25
-    @shapes[:leg_left].y = @y + @size * 0.4 + walk_offset * 0.5
-    @shapes[:leg_right].x = @x + @size * 0.05
-    @shapes[:leg_right].y = @y + @size * 0.4 - walk_offset * 0.5
+    # Рот
+    @shapes[:mouth]&.x = @x - @size * 0.1
+    @shapes[:mouth]&.y = base_y + @size * 0.05
+
+    @shapes[:body]&.x = @x - @size * 0.3
+    @shapes[:body]&.y = @y - @size * 0.1
+
+    @shapes[:arm_left]&.x = @x - @size * 0.4
+    @shapes[:arm_left]&.y = @y - @size * 0.05 - walk_offset
+    @shapes[:arm_right]&.x = @x + @size * 0.25
+    @shapes[:arm_right]&.y = @y - @size * 0.05 + walk_offset
+
+    # Когти
+    @shapes[:claw_left]&.x1 = @x - @size * 0.4
+    @shapes[:claw_left]&.y1 = @y + @size * 0.35
+    @shapes[:claw_left]&.x2 = @x - @size * 0.45
+    @shapes[:claw_left]&.y2 = @y + @size * 0.4
+    @shapes[:claw_left]&.x3 = @x - @size * 0.35
+    @shapes[:claw_left]&.y3 = @y + @size * 0.4
+    
+    @shapes[:claw_right]&.x1 = @x + @size * 0.4
+    @shapes[:claw_right]&.y1 = @y + @size * 0.35
+    @shapes[:claw_right]&.x2 = @x + @size * 0.45
+    @shapes[:claw_right]&.y2 = @y + @size * 0.4
+    @shapes[:claw_right]&.x3 = @x + @size * 0.35
+    @shapes[:claw_right]&.y3 = @y + @size * 0.4
+
+    @shapes[:leg_left]&.x = @x - @size * 0.25
+    @shapes[:leg_left]&.y = @y + @size * 0.4 + walk_offset * 0.5
+    @shapes[:leg_right]&.x = @x + @size * 0.05
+    @shapes[:leg_right]&.y = @y + @size * 0.4 - walk_offset * 0.5
   end
 
   def update_skeleton_animation(frame, base_y)
+    # ВАЖНО: Этот метод вызывается из update_all_positions, когда @x и @y уже экранные координаты
     walk_offset = @current_state == :walk ? Math.sin(frame * Math::PI) * @size * 0.1 : 0
 
-    @shapes[:skull].x = @x
-    @shapes[:skull].y = base_y - @size * 0.1
+    # Обновляем ВСЕ фигуры скелета с экранными координатами
+    @shapes[:skull]&.x = @x
+    @shapes[:skull]&.y = base_y - @size * 0.1
 
-    @shapes[:spine].x = @x - @size * 0.05
-    @shapes[:spine].y = @y - @size * 0.05
+    @shapes[:eye_left]&.x = @x - @size * 0.1
+    @shapes[:eye_left]&.y = base_y - @size * 0.08
+    @shapes[:eye_right]&.x = @x + @size * 0.1
+    @shapes[:eye_right]&.y = base_y - @size * 0.08
 
-    @shapes[:arm_left].x = @x - @size * 0.35
-    @shapes[:arm_left].y = @y - @size * 0.05 - walk_offset
-    @shapes[:arm_right].x = @x + @size * 0.25
-    @shapes[:arm_right].y = @y - @size * 0.05 + walk_offset
+    @shapes[:jaw]&.x = @x - @size * 0.15
+    @shapes[:jaw]&.y = base_y + @size * 0.05
 
-    @shapes[:leg_left].x = @x - @size * 0.2
-    @shapes[:leg_left].y = @y + @size * 0.5 + walk_offset * 0.5
-    @shapes[:leg_right].x = @x + @size * 0.1
-    @shapes[:leg_right].y = @y + @size * 0.5 - walk_offset * 0.5
+    @shapes[:spine]&.x = @x - @size * 0.05
+    @shapes[:spine]&.y = @y - @size * 0.05
+
+    # Ребра
+    (0..2).each do |i|
+      rib_key = "rib_#{i}".to_sym
+      if @shapes[rib_key]
+        @shapes[rib_key].x = @x - @size * 0.2
+        @shapes[rib_key].y = @y + @size * (0.1 + i * 0.15)
+      end
+    end
+
+    @shapes[:arm_left]&.x = @x - @size * 0.35
+    @shapes[:arm_left]&.y = @y - @size * 0.05 - walk_offset
+    @shapes[:arm_right]&.x = @x + @size * 0.25
+    @shapes[:arm_right]&.y = @y - @size * 0.05 + walk_offset
+
+    @shapes[:leg_left]&.x = @x - @size * 0.2
+    @shapes[:leg_left]&.y = @y + @size * 0.5 + walk_offset * 0.5
+    @shapes[:leg_right]&.x = @x + @size * 0.1
+    @shapes[:leg_right]&.y = @y + @size * 0.5 - walk_offset * 0.5
+    
+    # Обновляем дополнительные элементы для рыцарей и магов
+    @shapes[:armor]&.x = @x - @size * 0.2 if @shapes[:armor]
+    @shapes[:armor]&.y = @y if @shapes[:armor]
+    
+    @shapes[:staff]&.x = @x + @size * 0.3 if @shapes[:staff]
+    @shapes[:staff]&.y = @y - @size * 0.2 if @shapes[:staff]
+    
+    @shapes[:staff_crystal]&.x = @x + @size * 0.325 if @shapes[:staff_crystal]
+    @shapes[:staff_crystal]&.y = @y - @size * 0.4 if @shapes[:staff_crystal]
   end
 
   def update_zombie_animation(frame, base_y)
@@ -1138,13 +1439,174 @@ class SpriteRenderer
     @shapes[:leg_right].y = @y + @size * 0.45 - walk_offset * 0.5
   end
 
+  def create_skeleton_enemy_shapes
+    create_skeleton_shapes
+  end
+  
+  def create_bat_enemy_shapes
+    # Летучая мышь - маленькая, темная
+    @shapes[:body] = Circle.new(x: @x, y: @y, radius: @size * 0.4, color: '#2A2A2A', z: 500)
+    @shapes[:wing_left] = Triangle.new(
+      x1: @x - @size * 0.3, y1: @y,
+      x2: @x - @size * 0.5, y2: @y - @size * 0.3,
+      x3: @x - @size * 0.2, y3: @y - @size * 0.2,
+      color: '#1A1A1A', z: 499
+    )
+    @shapes[:wing_right] = Triangle.new(
+      x1: @x + @size * 0.3, y1: @y,
+      x2: @x + @size * 0.5, y2: @y - @size * 0.3,
+      x3: @x + @size * 0.2, y3: @y - @size * 0.2,
+      color: '#1A1A1A', z: 499
+    )
+    @shapes[:head] = Circle.new(x: @x, y: @y - @size * 0.2, radius: @size * 0.2, color: '#1A1A1A', z: 501)
+  end
+  
+  def create_ghost_enemy_shapes
+    # Призрак - полупрозрачный, белый
+    @shapes[:body] = Circle.new(x: @x, y: @y, radius: @size * 0.5, color: [255, 255, 255, 0.7], z: 500)
+    @shapes[:head] = Circle.new(x: @x, y: @y - @size * 0.3, radius: @size * 0.3, color: [255, 255, 255, 0.8], z: 501)
+    @shapes[:eye_left] = Circle.new(x: @x - @size * 0.15, y: @y - @size * 0.3, radius: @size * 0.08, color: '#000000', z: 502)
+    @shapes[:eye_right] = Circle.new(x: @x + @size * 0.15, y: @y - @size * 0.3, radius: @size * 0.08, color: '#000000', z: 502)
+  end
+  
+  def create_zombie_enemy_shapes
+    create_zombie_shapes
+  end
+  
+  def create_knight_enemy_shapes
+    # Рыцарь-скелет - похож на скелета, но с доспехами
+    create_skeleton_shapes
+    # Добавляем доспехи
+    @shapes[:armor] = Rectangle.new(x: @x - @size * 0.2, y: @y, width: @size * 0.4, height: @size * 0.3, color: '#808080', z: 503)
+  end
+  
+  def create_mage_enemy_shapes
+    # Маг-скелет - скелет с посохом
+    create_skeleton_shapes
+    @shapes[:staff] = Rectangle.new(x: @x + @size * 0.3, y: @y - @size * 0.2, width: @size * 0.05, height: @size * 0.5, color: '#8B4513', z: 503)
+    @shapes[:staff_crystal] = Circle.new(x: @x + @size * 0.325, y: @y - @size * 0.4, radius: @size * 0.1, color: '#FF0000', z: 504)
+  end
+  
+  def create_elite_knight_enemy_shapes
+    # Элитный рыцарь - крупнее, с золотыми доспехами и свечением
+    create_knight_enemy_shapes
+    # Золотые доспехи
+    @shapes[:armor]&.color = '#FFD700' if @shapes[:armor]
+    # Свечение (золотое)
+    @shapes[:glow] = Circle.new(x: @x, y: @y, radius: @size * 0.7, color: [255, 215, 0, 0.4], z: 498)
+    # Корона для элитного
+    @shapes[:crown] = Triangle.new(
+      x1: @x, y1: @y - @size * 0.5,
+      x2: @x - @size * 0.15, y2: @y - @size * 0.35,
+      x3: @x + @size * 0.15, y3: @y - @size * 0.35,
+      color: '#FFD700', z: 504
+    )
+  end
+  
+  def create_elite_mage_enemy_shapes
+    # Элитный маг - крупнее, с фиолетовым свечением
+    create_mage_enemy_shapes
+    @shapes[:staff_crystal]&.color = '#8A2BE2' if @shapes[:staff_crystal]
+    # Свечение (фиолетовое)
+    @shapes[:glow] = Circle.new(x: @x, y: @y, radius: @size * 0.7, color: [138, 43, 226, 0.4], z: 498)
+    # Корона для элитного
+    @shapes[:crown] = Triangle.new(
+      x1: @x, y1: @y - @size * 0.5,
+      x2: @x - @size * 0.15, y2: @y - @size * 0.35,
+      x3: @x + @size * 0.15, y3: @y - @size * 0.35,
+      color: '#8A2BE2', z: 504
+    )
+  end
+  
+  def create_boss_enemy_shapes
+    # Босс - очень крупный, с красным свечением и короной
+    create_skeleton_shapes
+    # Двойное свечение для босса
+    @shapes[:glow_outer] = Circle.new(x: @x, y: @y, radius: @size * 0.9, color: [255, 0, 0, 0.3], z: 496)
+    @shapes[:glow] = Circle.new(x: @x, y: @y, radius: @size * 0.7, color: [255, 100, 100, 0.5], z: 497)
+    # Большая корона
+    @shapes[:crown] = Triangle.new(
+      x1: @x, y1: @y - @size * 0.6,
+      x2: @x - @size * 0.25, y2: @y - @size * 0.4,
+      x3: @x + @size * 0.25, y3: @y - @size * 0.4,
+      color: '#FFD700', z: 505
+    )
+    # Дополнительные детали короны
+    @shapes[:crown_gem] = Circle.new(x: @x, y: @y - @size * 0.5, radius: @size * 0.08, color: '#FF0000', z: 506)
+  end
+
+  def update_all_positions
+    # Обновляем позиции всех фигур спрайта используя @x и @y (которые уже экранные координаты)
+    case @type
+    when :player, :knight
+      update_knight_positions
+    when :mage
+      update_mage_positions
+    when :rogue
+      update_rogue_positions
+    when :bat_enemy
+      update_bat_positions
+    when :ghost_enemy
+      update_ghost_positions
+    when :skeleton_enemy, :zombie_enemy, :knight_enemy, :mage_enemy, :elite_knight_enemy, :elite_mage_enemy, :boss_enemy
+      # Эти типы используют существующие методы
+      base_y = @y - @size / 2
+      # Обновляем все фигуры скелета с правильным кадром анимации
+      if [:skeleton_enemy, :knight_enemy, :mage_enemy, :elite_knight_enemy, :elite_mage_enemy, :boss_enemy].include?(@type)
+        frame = @animations[@current_state] ? @animations[@current_state].get_current_frame : 0
+        update_skeleton_animation(frame, base_y)
+      end
+      if @type == :zombie_enemy
+        frame = @animations[@current_state] ? @animations[@current_state].get_current_frame : 0
+        update_zombie_animation(frame, base_y)
+      end
+      
+      # Обновляем позиции свечения и короны для элитных и боссов
+      if @shapes[:glow]
+        @shapes[:glow].x = @x
+        @shapes[:glow].y = @y
+      end
+      if @shapes[:glow_outer]
+        @shapes[:glow_outer].x = @x
+        @shapes[:glow_outer].y = @y
+      end
+      if @shapes[:crown]
+        case @type
+        when :elite_knight_enemy, :elite_mage_enemy
+          @shapes[:crown].x1 = @x
+          @shapes[:crown].y1 = @y - @size * 0.5
+          @shapes[:crown].x2 = @x - @size * 0.15
+          @shapes[:crown].y2 = @y - @size * 0.35
+          @shapes[:crown].x3 = @x + @size * 0.15
+          @shapes[:crown].y3 = @y - @size * 0.35
+        when :boss_enemy
+          @shapes[:crown].x1 = @x
+          @shapes[:crown].y1 = @y - @size * 0.6
+          @shapes[:crown].x2 = @x - @size * 0.25
+          @shapes[:crown].y2 = @y - @size * 0.4
+          @shapes[:crown].x3 = @x + @size * 0.25
+          @shapes[:crown].y3 = @y - @size * 0.4
+        end
+      end
+      if @shapes[:crown_gem]
+        @shapes[:crown_gem].x = @x
+        @shapes[:crown_gem].y = @y - @size * 0.5
+      end
+    else
+      update_monster_positions
+    end
+  end
+
   def remove
     @shapes.values.each do |shape|
       if shape.is_a?(Array)
-        shape.each(&:remove)
+        shape.each do |s|
+          s.remove if s.respond_to?(:remove)
+        end
       else
-        shape.remove
+        shape.remove if shape.respond_to?(:remove)
       end
     end
+    @shapes.clear
   end
 end

@@ -14,6 +14,7 @@ class MapObject
     
     # Интерактивные объекты
     chest: { solid: false, interactive: true, size: 25 },
+    free_chest: { solid: false, interactive: true, size: 25 },
     lamp: { solid: false, interactive: false, size: 15 },
     barrel: { solid: true, interactive: true, size: 20 },
     
@@ -41,7 +42,7 @@ class MapObject
     @highlight_shape = nil
     @interaction_progress = 0.0 # Прогресс взаимодействия (0.0 - 1.0)
     @interaction_time = 0.0 # Время, которое игрок стоит рядом
-    @interaction_required_time = 2.0 # Время, необходимое для открытия (секунды)
+    @interaction_required_time = 3.5 # Время, необходимое для открытия (секунды) - увеличено с 2.0
     @progress_shapes = [] # Фигуры для отображения прогресса
     create_shapes
   end
@@ -62,6 +63,8 @@ class MapObject
       create_tombstone_shapes
     when :chest
       create_chest_shapes
+    when :free_chest
+      create_free_chest_shapes
     when :lamp
       create_lamp_shapes
     when :barrel
@@ -72,6 +75,10 @@ class MapObject
       create_flower_shapes
     when :bush
       create_bush_shapes
+    when :altar
+      create_altar_shapes
+    when :portal
+      create_portal_shapes
     end
   end
 
@@ -443,6 +450,61 @@ class MapObject
     @shape_offsets << { x: 0, y: -5 }
   end
 
+  def create_free_chest_shapes
+    # Бесплатный сундук - золотой, выглядит по-другому
+    # Основание
+    @shapes << Rectangle.new(
+      x: 0, y: 0,
+      width: 24, height: 8,
+      color: '#FFD700' # Золотой
+    )
+    @shape_offsets << { x: -12, y: 3 }
+    
+    # Крышка (открыта)
+    @shapes << Rectangle.new(
+      x: 0, y: 0,
+      width: 24, height: 6,
+      color: '#FFA500' # Оранжево-золотой
+    )
+    @shape_offsets << { x: -12, y: -3 }
+    
+    # Светящийся эффект
+    @shapes << Circle.new(
+      x: 0, y: 0,
+      radius: 15,
+      color: [255, 215, 0, 0.3] # Полупрозрачный золотой
+    )
+    @shape_offsets << { x: 0, y: 0 }
+    
+    # Желтая обводка
+    unless @opened
+      chest_width = 24
+      chest_height = 14
+      border_width = 1
+      
+      4.times do |i|
+        case i
+        when 0 # Верх
+          @shapes.unshift(Rectangle.new(x: 0, y: 0, width: chest_width + border_width * 2, height: border_width, color: [255, 255, 0, 1.0], z: 502))
+          @shape_offsets.unshift({ x: -(chest_width / 2 + border_width), y: -(chest_height / 2) })
+        when 1 # Низ
+          @shapes.unshift(Rectangle.new(x: 0, y: 0, width: chest_width + border_width * 2, height: border_width, color: [255, 255, 0, 1.0], z: 502))
+          @shape_offsets.unshift({ x: -(chest_width / 2 + border_width), y: chest_height / 2 })
+        when 2 # Лево
+          @shapes.unshift(Rectangle.new(x: 0, y: 0, width: border_width, height: chest_height, color: [255, 255, 0, 1.0], z: 502))
+          @shape_offsets.unshift({ x: -(chest_width / 2 + border_width), y: 0 })
+        when 3 # Право
+          @shapes.unshift(Rectangle.new(x: 0, y: 0, width: border_width, height: chest_height, color: [255, 255, 0, 1.0], z: 502))
+          @shape_offsets.unshift({ x: chest_width / 2 + border_width, y: 0 })
+        end
+      end
+    end
+    
+    @interactive = true
+    @solid = false
+    @size = 24
+  end
+
   def create_barrel_shapes
     # Бочка
     @shapes << Rectangle.new(
@@ -666,8 +728,9 @@ class MapObject
     update_destroyed_visuals
   end
 
-  def set_highlight(highlighted, camera = nil)
+  def set_highlight(highlighted, camera = nil, interaction_range = nil)
     @highlighted = highlighted
+    @interaction_range = interaction_range # Сохраняем радиус взаимодействия для подсветки
     update_highlight(camera)
   end
 
@@ -711,6 +774,7 @@ class MapObject
     
     @interaction_time = 0.0
     @interaction_progress = 0.0
+    @destroying = false if @type == :barrel # Сбрасываем флаг разрушения для ящиков
     # Удаляем индикатор прогресса
     @progress_shapes.each(&:remove) if @progress_shapes
     @progress_shapes.clear
@@ -884,6 +948,9 @@ class MapObject
 
   def update_highlight(camera = nil)
     if @highlighted && !@opened && !@destroyed
+      # Определяем радиус подсветки на основе радиуса взаимодействия
+      highlight_radius = @interaction_range || (@size + 5)
+      
       # Создаем подсветку, если её нет
       if @highlight_shape.nil?
         if camera
@@ -894,15 +961,26 @@ class MapObject
         @highlight_shape = Circle.new(
           x: screen_x,
           y: screen_y,
-          radius: @size + 5,
+          radius: highlight_radius,
           color: [255, 255, 0, 0.3],
           z: 1000
         )
       elsif camera && @highlight_shape
-        # Обновляем позицию подсветки
+        # Обновляем позицию и радиус подсветки
         screen_x, screen_y = camera.world_to_screen(@x, @y)
         @highlight_shape.x = screen_x
         @highlight_shape.y = screen_y
+        # Обновляем радиус, если он изменился
+        if @highlight_shape.radius != highlight_radius
+          @highlight_shape.remove
+          @highlight_shape = Circle.new(
+            x: screen_x,
+            y: screen_y,
+            radius: highlight_radius,
+            color: [255, 255, 0, 0.3],
+            z: 1000
+          )
+        end
       end
     else
       # Удаляем подсветку
@@ -977,6 +1055,92 @@ class MapObject
         break
       end
     end
+  end
+
+  def create_altar_shapes
+    # Алтарь - каменная плита с символами
+    # Основание
+    @shapes << Rectangle.new(
+      x: 0, y: 0,
+      width: 40, height: 40,
+      color: '#696969',
+      z: 500
+    )
+    @shape_offsets << { x: -20, y: -20 }
+    
+    # Символы на алтаре
+    @shapes << Circle.new(
+      x: 0, y: 0,
+      radius: 8,
+      color: '#FFD700',
+      z: 501
+    )
+    @shape_offsets << { x: 0, y: 0 }
+    
+    # Желтая обводка для интерактивности
+    4.times do |i|
+      case i
+      when 0 # Верх
+        @shapes.unshift(Rectangle.new(x: 0, y: 0, width: 40, height: 1, color: '#FFFF00', z: 502))
+        @shape_offsets.unshift({ x: -20, y: -20 })
+      when 1 # Низ
+        @shapes.unshift(Rectangle.new(x: 0, y: 0, width: 40, height: 1, color: '#FFFF00', z: 502))
+        @shape_offsets.unshift({ x: -20, y: 19 })
+      when 2 # Лево
+        @shapes.unshift(Rectangle.new(x: 0, y: 0, width: 1, height: 40, color: '#FFFF00', z: 502))
+        @shape_offsets.unshift({ x: -20, y: -20 })
+      when 3 # Право
+        @shapes.unshift(Rectangle.new(x: 0, y: 0, width: 1, height: 40, color: '#FFFF00', z: 502))
+        @shape_offsets.unshift({ x: 19, y: -20 })
+      end
+    end
+    
+    @interactive = true
+    @solid = false
+    @size = 40
+  end
+  
+  def create_portal_shapes
+    # Портал - вращающийся круг с эффектом
+    # Внешний круг
+    @shapes << Circle.new(
+      x: 0, y: 0,
+      radius: 30,
+      color: '#8B00FF',
+      z: 500
+    )
+    @shape_offsets << { x: 0, y: 0 }
+    
+    # Внутренний круг
+    @shapes << Circle.new(
+      x: 0, y: 0,
+      radius: 20,
+      color: '#4B0082',
+      z: 501
+    )
+    @shape_offsets << { x: 0, y: 0 }
+    
+    # Центр
+    @shapes << Circle.new(
+      x: 0, y: 0,
+      radius: 10,
+      color: '#000000',
+      z: 502
+    )
+    @shape_offsets << { x: 0, y: 0 }
+    
+    # Желтая обводка для интерактивности
+    4.times do |i|
+      angle = i * Math::PI / 2
+      x_offset = Math.cos(angle) * 30
+      y_offset = Math.sin(angle) * 30
+      @shapes.unshift(Circle.new(x: 0, y: 0, radius: 2, color: '#FFFF00', z: 503))
+      @shape_offsets.unshift({ x: x_offset, y: y_offset })
+    end
+    
+    @interactive = true
+    @solid = false
+    @size = 60
   end
 
   def remove

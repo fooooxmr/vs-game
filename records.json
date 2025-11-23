@@ -1,0 +1,102 @@
+[
+  {
+    "enemies_killed": 378,
+    "time_alive": 174,
+    "level": 26,
+    "gold": 451,
+    "weapons_count": 4,
+    "passives_count": 6,
+    "date": "2025-11-23 17:30:01",
+    "completed": false
+  },
+  {
+    "enemies_killed": 253,
+    "time_alive": 114,
+    "level": 25,
+    "gold": 439,
+    "weapons_count": 2,
+    "passives_count": 11,
+    "date": "2025-11-23 17:25:17",
+    "completed": false
+  },
+  {
+    "enemies_killed": 52,
+    "time_alive": 80,
+    "level": 2,
+    "gold": 40,
+    "weapons_count": 1,
+    "passives_count": 1,
+    "date": "2025-11-23 17:23:14",
+    "completed": false
+  },
+  {
+    "enemies_killed": 36,
+    "time_alive": 149,
+    "level": 8,
+    "gold": 100,
+    "weapons_count": 2,
+    "passives_count": 5,
+    "date": "2025-11-23 17:37:16",
+    "completed": false
+  },
+  {
+    "enemies_killed": 33,
+    "time_alive": 188,
+    "level": 12,
+    "gold": 115,
+    "weapons_count": 1,
+    "passives_count": 3,
+    "date": "2025-11-23 19:24:15",
+    "completed": false
+  },
+  {
+    "enemies_killed": 33,
+    "time_alive": 39,
+    "level": 3,
+    "gold": 38,
+    "weapons_count": 1,
+    "passives_count": 1,
+    "date": "2025-11-23 17:17:30",
+    "completed": false
+  },
+  {
+    "enemies_killed": 29,
+    "time_alive": 145,
+    "level": 4,
+    "gold": 50,
+    "weapons_count": 1,
+    "passives_count": 2,
+    "date": "2025-11-23 20:16:34",
+    "completed": false
+  },
+  {
+    "enemies_killed": 29,
+    "time_alive": 169,
+    "level": 7,
+    "gold": 210,
+    "weapons_count": 2,
+    "passives_count": 3,
+    "date": "2025-11-23 20:49:57",
+    "completed": false
+  },
+  {
+    "enemies_killed": 24,
+    "time_alive": 40,
+    "level": 2,
+    "gold": 3,
+    "weapons_count": 1,
+    "passives_count": 1,
+    "date": "2025-11-23 17:08:42",
+    "completed": false
+  },
+  {
+    "enemies_killed": 16,
+    "time_alive": 118,
+    "level": 4,
+    "gold": 40,
+    "weapons_count": 1,
+    "passives_count": 3,
+    "date": "2025-11-23 17:51:02",
+    "completed": false
+  }
+]

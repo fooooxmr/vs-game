@@ -14,50 +14,66 @@ class Weapon
     @projectiles = []
     @max_level = 8
     initialize_weapon_stats
+    
+    # Сохраняем базовые значения для применения пассивок
+    @base_damage = @damage
+    @base_cooldown = @cooldown
+    @base_range = @range
+    @base_amount = @amount
+    @base_area = @area
+    @base_duration = @duration
   end
 
   def initialize_weapon_stats
     case @type
     when :whip
-      @damage = 20
-      @cooldown = 0.8
+      @damage = 15  # Снижен с 20
+      @cooldown = 1.2  # Увеличен с 0.8
       @range = 80
       @name = "Кнут"
-      @icon = "⚔️"
+      @icon = "[W]"
     when :magic_wand
       @damage = 5
-      @cooldown = 0.3
+      @cooldown = 1.0  # 1 снаряд в секунду изначально
       @range = 200
       @amount = 1
       @name = "Магическая палочка"
-      @icon = "✨"
+      @icon = "[*]"
     when :knife
       @damage = 8
-      @cooldown = 0.4
+      @cooldown = 1.0  # 1 снаряд в секунду изначально
       @range = 150
       @amount = 1
       @name = "Нож"
-      @icon = "🔪"
+      @icon = "[K]"
     when :axe
       @damage = 15
       @cooldown = 1.2
       @range = 120
       @name = "Топор"
-      @icon = "🪓"
+      @icon = "[A]"
     when :cross
       @damage = 12
       @cooldown = 2.0
       @range = 100
       @name = "Крест"
-      @icon = "✝️"
+      @icon = "[+]"
     when :garlic
       @damage = 3
       @cooldown = 0.1
       @range = 50
       @area = 50
       @name = "Чеснок"
-      @icon = "🧄"
+      @icon = "[G]"
     end
+    
+    # Сохраняем базовые значения после инициализации
+    @base_damage = @damage
+    @base_cooldown = @cooldown
+    @base_range = @range
+    @base_amount = @amount
+    @base_area = @area
+    @base_duration = @duration
   end
 
   def upgrade
@@ -68,26 +84,71 @@ class Weapon
   end
 
   def apply_level_bonuses
-    # Улучшения зависят от уровня
-    case @level
-    when 1
-      @damage *= 1.2
-    when 2
-      @cooldown *= 0.9
-    when 3
-      @range *= 1.15
-    when 4
-      @damage *= 1.2
-    when 5
-      @amount += 1 if @amount < 5
-    when 6
-      @cooldown *= 0.9
-    when 7
-      @damage *= 1.3
-    when 8
-      @damage *= 1.5
-      @cooldown *= 0.8
+    # Этот метод больше не используется напрямую - все улучшения через recalculate_with_level_bonuses
+    # Оставляем для совместимости, но не применяем бонусы здесь
+    # Все улучшения теперь линейные и применяются в recalculate_with_level_bonuses
+  end
+
+  def apply_passive_bonuses(amount: 0, area: 0, range: 0, cooldown_reduction: 0, duration: 0, damage_multiplier: 1.0)
+    # Сначала пересчитываем значения с учетом уровня
+    recalculate_with_level_bonuses
+    
+    # Затем применяем бонусы от пассивок
+    # Урон (мультипликативно от пассивки урона)
+    @damage = (@damage * damage_multiplier).round
+    
+    # Количество снарядов (аддитивно)
+    @amount = @base_amount + amount.to_i
+    
+    # Область (мультипликативно)
+    @area = @base_area * (1.0 + area)
+    
+    # Дальность (мультипликативно) - ограничиваем максимальный бонус
+    max_range_bonus = [range, 0.15].min  # Максимум +15% от пассивок
+    @range = (@base_range * (1.0 + max_range_bonus)).round
+    
+    # Снижение кулдауна (мультипликативно, уменьшает кулдаун)
+    # Ограничиваем максимальное снижение кулдауна от пассивок (максимум -15%)
+    max_cooldown_reduction = [cooldown_reduction, 0.15].min
+    @cooldown = @base_cooldown * (1.0 - max_cooldown_reduction).clamp(0.7, 1.0)
+    
+    # Длительность (мультипликативно)
+    @duration = @base_duration * (1.0 + duration)
+  end
+  
+  def recalculate_with_level_bonuses
+    # ВАЖНО: Базовые значения НЕ должны изменяться! Они остаются постоянными
+    # Восстанавливаем значения из базовых
+    @damage = @base_damage
+    @cooldown = @base_cooldown
+    @range = @base_range
+    @amount = @base_amount
+    @area = @base_area
+    @duration = @base_duration
+    
+    # Улучшения от уровня оружия - заметные, но сбалансированные
+    # Урон: +3% за уровень (увеличено с 0.5%)
+    damage_bonus = 1.0 + (@level * 0.03)
+    @damage = (@base_damage * damage_bonus).round
+    
+    # Кулдаун: -2% за уровень (увеличено с 0.3%, минимум 0.5 от базового)
+    cooldown_reduction = @level * 0.02
+    @cooldown = [@base_cooldown * (1.0 - cooldown_reduction), @base_cooldown * 0.5].max
+    
+    # Дальность: +2% за уровень (увеличено с 0.5%, максимум +20%)
+    range_bonus = 1.0 + (@level * 0.02)
+    @range = (@base_range * [range_bonus, 1.20].min).round
+    
+    # Количество снарядов: увеличивается с уровнем для magic_wand и knife
+    if @type == :magic_wand || @type == :knife
+      # Увеличиваем на 0.5 за каждый уровень (начиная с уровня 2)
+      level_bonus = [(@level - 1) * 0.5, 0].max
+      @amount = (@base_amount + level_bonus).round
+      # Максимум 8 снарядов (увеличено с 5)
+      @amount = [@amount, 8].min
     end
+    
+    # НЕ обновляем базовые значения! Они должны оставаться постоянными
   end
 
   def can_attack?(current_time)
@@ -128,14 +189,34 @@ class Weapon
   end
 
   def magic_wand_attack(player_x, player_y, enemies)
-    # Магическая палочка стреляет в ближайшего врага
-    nearest = enemies.min_by { |e| Math.sqrt((e.x - player_x)**2 + (e.y - player_y)**2) }
+    # Магическая палочка стреляет в ближайшего врага в радиусе атаки
+    return [] if enemies.nil? || enemies.empty?
+    
+    # Находим ближайшего врага в радиусе атаки
+    enemies_in_range = enemies.select do |e|
+      next false unless e.alive?
+      distance = Math.sqrt((e.x - player_x)**2 + (e.y - player_y)**2)
+      distance <= @range
+    end
+    
+    return [] if enemies_in_range.empty?
+    
+    nearest = enemies_in_range.min_by { |e| Math.sqrt((e.x - player_x)**2 + (e.y - player_y)**2) }
     return [] unless nearest
 
     angle = Math.atan2(nearest.y - player_y, nearest.x - player_x)
+    
     projectiles = []
     @amount.times do
-      projectiles << { type: :magic_wand, x: player_x, y: player_y, angle: angle, damage: @damage, speed: 200, range: @range }
+      projectiles << { 
+        type: :magic_wand, 
+        x: player_x, 
+        y: player_y, 
+        angle: angle, 
+        damage: @damage, 
+        speed: 200, 
+        range: @range 
+      }
     end
     projectiles
   end
@@ -146,6 +227,11 @@ class Weapon
     return [] unless nearest
 
     angle = Math.atan2(nearest.y - player_y, nearest.x - player_x)
+    distance = Math.sqrt((nearest.x - player_x)**2 + (nearest.y - player_y)**2)
+    
+    # Проверяем, что враг в зоне атаки
+    return [] unless distance <= @range
+
     projectiles = []
     @amount.times do |i|
       offset = (i - @amount / 2.0) * 0.1
@@ -178,7 +264,7 @@ class Weapon
   end
 
   def icon
-    @icon || "⚔️"
+    @icon || "[W]"
   end
 
   def max_level?

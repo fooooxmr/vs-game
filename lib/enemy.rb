@@ -1,18 +1,48 @@
 require_relative 'sprite_renderer'
+require_relative 'enemy_types'
 
 class Enemy
-  attr_accessor :x, :y, :health, :max_health, :speed, :attack_range, :attack_cooldown, :last_attack_time
+  attr_accessor :x, :y, :health, :max_health, :speed, :attack_range, :attack_cooldown, :last_attack_time,
+                :enemy_type, :ranged, :elite, :boss, :area_attack, :special_attacks, :sprite, :size
 
-  def initialize(x, y)
+  def initialize(x, y, enemy_type = :skeleton, difficulty_multiplier = 1.0)
     @x = x
     @y = y
-    @max_health = 30
+    @enemy_type = enemy_type
+    @type_data = EnemyTypes.get_type(enemy_type)
+    
+    # Применяем характеристики типа с учетом сложности
+    base_health = @type_data[:health] || 30
+    base_speed = @type_data[:speed] || 60
+    base_damage = @type_data[:damage] || 5
+    
+    # Плавное усиление мобов со временем
+    # Здоровье и урон увеличиваются постепенно
+    health_multiplier = difficulty_multiplier * 1.1 # +10% к здоровью за множитель
+    damage_multiplier = difficulty_multiplier * 1.12 # +12% к урону за множитель (немного снижено для баланса)
+    speed_multiplier = 1.0 + (difficulty_multiplier - 1.0) * 0.3 # Скорость увеличивается медленнее
+    
+    # Дополнительное усиление для бандита и мага (немного)
+    if @enemy_type == :knight || @enemy_type == :mage
+      damage_multiplier *= 1.05  # +5% дополнительно к урону
+    end
+    
+    @max_health = (base_health * health_multiplier).round
     @health = @max_health
-    @speed = 60 # пикселей в секунду
-    @attack_range = 25
-    @attack_cooldown = 1.0
+    @speed = (base_speed * speed_multiplier).round
+    @damage = (base_damage * damage_multiplier).round
+    @attack_range = @type_data[:attack_range] || 25
+    @attack_cooldown = @type_data[:attack_cooldown] || 1.0
     @last_attack_time = 0
-    @size = 15
+    # Размер зависит от типа: элитные и боссы крупнее
+    base_size = 15
+    if @type_data[:boss]
+      @size = 30
+    elsif @type_data[:elite]
+      @size = 22
+    else
+      @size = base_size
+    end
     @sprite = nil
     @is_moving = false
     @is_attacking = false
@@ -21,7 +51,20 @@ class Enemy
     @last_y = y
     @was_alive = true
     @just_died = false
-    @experience_value = 2 # Опыт за убийство
+    @experience_value = @type_data[:experience] || 2
+    
+    # Специальные свойства
+    @ranged = @type_data[:ranged] || false
+    @elite = @type_data[:elite] || false
+    @boss = @type_data[:boss] || false
+    @area_attack = @type_data[:area_attack] || false
+    @special_attacks = @type_data[:special_attacks] || false
+    
+    # Для специальных атак
+    @special_attack_cooldown = 5.0 # 5 секунд между специальными атаками
+    @last_special_attack = 0
+    @last_contact_damage_time = 0 # Время последнего урона при контакте
+    @contact_damage_cooldown = 0.5 # Кулдаун урона при контакте (0.5 секунды)
   end
 
   def initialize_shapes
@@ -31,8 +74,35 @@ class Enemy
 
   def ensure_shapes
     unless @sprite
-      @sprite = SpriteRenderer.new(@x, @y, @size, :enemy)
+      # Определяем тип спрайта на основе типа врага
+      sprite_type = case @enemy_type
+      when :skeleton
+        :skeleton_enemy
+      when :bat
+        :bat_enemy
+      when :ghost
+        :ghost_enemy
+      when :zombie
+        :zombie_enemy
+      when :knight
+        :knight_enemy
+      when :mage
+        :mage_enemy
+      when :elite_knight
+        :elite_knight_enemy
+      when :elite_mage
+        :elite_mage_enemy
+      when :final_boss
+        :boss_enemy
+      else
+        :enemy
+      end
+      @sprite = SpriteRenderer.new(@x, @y, @size, sprite_type)
     end
+  end
+  
+  def name
+    @type_data[:name] || "Враг"
   end
 
   def update(delta_time, player, map = nil)
@@ -44,8 +114,16 @@ class Enemy
     @is_attacking = false
     @took_damage = false
 
-    # Двигаемся к игроку (с учетом карты и коллизий)
-    move_towards(player.x, player.y, delta_time, map)
+    # Для боссов и элитных монстров - специальные атаки
+    if (@boss || @elite) && @special_attacks
+      current_time = Time.now.to_f
+      if can_use_special_attack?(current_time)
+        use_special_attack(player, current_time)
+      end
+    end
+
+    # Двигаемся к игроку (с учетом карты и коллизий с игроком)
+    move_towards(player.x, player.y, delta_time, map, player)
 
     # Проверяем, двигается ли враг
     @is_moving = (@x != @last_x || @y != @last_y)
@@ -59,21 +137,31 @@ class Enemy
       end
     end
 
-    # Атакуем игрока, если близко
+    # Атакуем игрока, если близко (для элитных монстров атака обрабатывается в game.rb)
     old_attack_time = @last_attack_time
     if distance_to(player.x, player.y) <= @attack_range
-      attack_player(player)
-      # Проверяем, произошла ли атака (время изменилось)
-      @is_attacking = (@last_attack_time != old_attack_time && Time.now.to_f - @last_attack_time < 0.2)
+      if @elite
+        # Для элитных монстров атака обрабатывается в game.rb с индикацией
+        # Здесь только проверяем, что мы в радиусе атаки
+        @is_attacking = true
+      else
+        # Обычные монстры атакуют сразу
+        attack_result = attack_player(player)
+        # Проверяем, произошла ли атака (время изменилось)
+        @is_attacking = (@last_attack_time != old_attack_time && Time.now.to_f - @last_attack_time < 0.2)
+      end
     end
 
     # Обновляем спрайт (позиция будет обновлена в draw с учетом камеры)
+    # НЕ обновляем здесь, так как позиции должны обновляться с экранными координатами в draw
+    # Анимация обновляется в update_sprite_animation, который вызывается из update_sprite_animation
     if @sprite
+      # Обновляем только анимацию, но НЕ позиции (они обновятся в draw)
       @sprite.update(delta_time, @is_moving, @is_attacking, @took_damage)
     end
   end
 
-  def move_towards(target_x, target_y, delta_time, map = nil)
+  def move_towards(target_x, target_y, delta_time, map = nil, player = nil)
     dx = target_x - @x
     dy = target_y - @y
     distance = Math.sqrt(dx**2 + dy**2)
@@ -89,7 +177,7 @@ class Enemy
     new_x = @x + dx * move_distance
     new_y = @y + dy * move_distance
 
-    # Проверяем коллизии с картой
+    # Проверяем коллизии с картой и игроком
     if map
       # Проверяем коллизию по X
       test_x = new_x
@@ -97,8 +185,21 @@ class Enemy
       collisions_x = map.get_collisions(test_x, test_y, @size)
       solid_collision_x = collisions_x.find { |obj| obj.solid }
       
-      if solid_collision_x
-        # Не двигаемся по X
+      # Проверяем коллизию с игроком по X
+      player_collision_x = false
+      if player && player.alive?
+        player_distance = Math.sqrt((test_x - player.x)**2 + (test_y - player.y)**2)
+        collision_distance = (@size + player.size) * 0.8
+        player_collision_x = player_distance < collision_distance
+      end
+      
+      if solid_collision_x || player_collision_x
+        # Не двигаемся по X, но толкаем игрока если это коллизия с ним
+        if player_collision_x && !solid_collision_x
+          push_player(player, dx * move_distance * 0.5, 0)
+          # Наносим урон при контакте (если прошло достаточно времени)
+          apply_contact_damage(player, delta_time)
+        end
         new_x = @x
       end
       
@@ -108,8 +209,21 @@ class Enemy
       collisions_y = map.get_collisions(test_x, test_y, @size)
       solid_collision_y = collisions_y.find { |obj| obj.solid }
       
-      if solid_collision_y
-        # Не двигаемся по Y
+      # Проверяем коллизию с игроком по Y
+      player_collision_y = false
+      if player && player.alive?
+        player_distance = Math.sqrt((test_x - player.x)**2 + (test_y - player.y)**2)
+        collision_distance = (@size + player.size) * 0.8
+        player_collision_y = player_distance < collision_distance
+      end
+      
+      if solid_collision_y || player_collision_y
+        # Не двигаемся по Y, но толкаем игрока если это коллизия с ним
+        if player_collision_y && !solid_collision_y
+          push_player(player, 0, dy * move_distance * 0.5)
+          # Наносим урон при контакте (если прошло достаточно времени)
+          apply_contact_damage(player, delta_time)
+        end
         new_y = @y
       end
       
@@ -137,13 +251,305 @@ class Enemy
     @x = new_x
     @y = new_y
   end
+  
+  def push_player(player, push_x, push_y)
+    # Враг толкает игрока
+    player.x += push_x
+    player.y += push_y
+  end
+  
+  def apply_contact_damage(player, delta_time)
+    # Наносим урон при контакте с игроком
+    # ВСЕ враги (и ближние, и дальнобойные) наносят урон при толкании игрока
+    return unless player.alive?
+    
+    current_time = Time.now.to_f
+    # Проверяем кулдаун урона при контакте
+    if current_time - @last_contact_damage_time >= @contact_damage_cooldown
+      # Проверяем, что игрок действительно в контакте
+      distance = Math.sqrt((@x - player.x)**2 + (@y - player.y)**2)
+      contact_distance = (@size + player.size) * 0.9
+      
+      if distance < contact_distance
+        # Наносим урон при толкании (70% от обычного урона для всех врагов)
+        contact_damage = @damage * 0.7 # 70% от обычного урона
+        player.take_damage(contact_damage) if player.respond_to?(:take_damage)
+        @last_contact_damage_time = current_time
+      end
+    end
+  end
 
   def attack_player(player)
     current_time = Time.now.to_f
     return if current_time - @last_attack_time < @attack_cooldown
 
-    player.take_damage(5)
+    # Для боссов используем специальную систему атак
+    if @boss
+      distance = distance_to(player.x, player.y)
+      
+      # Ближняя атака босса - только вплотную
+      if distance <= @attack_range
+        # Ближняя атака наносит урон сразу
+        player.take_damage(@damage)
+        @last_attack_time = current_time
+        return nil
+      else
+        # Дальняя атака босса - с огромной дальностью
+        # Для финального босса - особые паттерны
+        if @enemy_type == :final_boss
+          # Финальный босс использует сложные паттерны дальних атак
+          return nil  # Специальные атаки обрабатываются в use_special_attack
+        else
+          # Обычный босс - простая дальняя атака
+          player_dx = player.x - (player.instance_variable_get(:@last_x) || player.x)
+          player_dy = player.y - (player.instance_variable_get(:@last_y) || player.y)
+          predicted_x = player.x + player_dx * 1.8
+          predicted_y = player.y + player_dy * 1.8
+          
+          return {
+            type: :boss_ranged_attack,
+            damage: @damage * 1.5,  # Дальняя атака сильнее
+            radius: 80,
+            delay: 1.5,  # Задержка перед ударом
+            x: predicted_x,
+            y: predicted_y,
+            enemy: self
+          }
+        end
+      end
+    end
+
+    # Для элитных монстров используем специальную систему индикации
+    if @elite
+      # Элитные монстры атакуют с индикацией
+      if @ranged
+        # Дальнобойная атака элитного мага - предсказываем позицию игрока
+        # Вычисляем направление движения игрока
+        player_last_x = player.instance_variable_get(:@last_x) || player.x
+        player_last_y = player.instance_variable_get(:@last_y) || player.y
+        player_dx = player.x - player_last_x
+        player_dy = player.y - player_last_y
+        
+        # Предсказываем позицию игрока через delay секунд (атакуем впереди него)
+        prediction_factor = 2.0  # Увеличено для лучшего предсказания
+        predicted_x = player.x + player_dx * prediction_factor
+        predicted_y = player.y + player_dy * prediction_factor
+        
+        # Возвращаем информацию для создания индикации
+        return {
+          type: :elite_ranged_attack,
+          damage: @damage,
+          radius: 40,  # Увеличено в 2 раза (было 20)
+          delay: 3.0,  # Увеличена задержка для возможности уклонения (было 2.5)
+          x: predicted_x,  # Предсказанная позиция, а не текущая
+          y: predicted_y,
+          enemy: self
+        }
+      else
+        # Ближняя атака элитного рыцаря - создаем индикацию вокруг врага
+        return {
+          type: :elite_melee_attack,
+          damage: @damage,
+          radius: [@attack_range / 3.0, 10].max,  # Уменьшено в 3 раза, минимум 10
+          delay: 1.5,  # Увеличена задержка (было 0.8)
+          x: @x,
+          y: @y,
+          enemy: self
+        }
+      end
+    end
+
+    # Обычные монстры атакуют сразу без индикации
+    if @ranged
+      # Дальнобойная атака (создает проектиль)
+      player.take_damage(@damage)
+    else
+      # Ближний бой
+      if @area_attack
+        # Атака по области - наносим урон всем в радиусе
+        player.take_damage(@damage)
+      else
+        player.take_damage(@damage)
+      end
+    end
+    
     @last_attack_time = current_time
+    nil  # Обычные монстры не возвращают информацию об атаке
+  end
+  
+  def can_use_special_attack?(current_time)
+    return false unless @special_attacks
+    current_time - @last_special_attack >= @special_attack_cooldown
+  end
+  
+  def use_special_attack(player, current_time)
+    return nil unless can_use_special_attack?(current_time)
+    @last_special_attack = current_time
+    
+    # Уникальные атаки боссов с паттернами
+    if @boss
+      # Финальный босс имеет более сложные и уникальные паттерны
+      if @enemy_type == :final_boss
+        # Выбираем случайный паттерн для финального босса (более сложные)
+        attack_pattern = rand(5)
+        
+        case attack_pattern
+        when 0
+          # Паттерн 1: Спираль из кругов вокруг игрока
+          player_dx = player.x - (player.instance_variable_get(:@last_x) || player.x)
+          player_dy = player.y - (player.instance_variable_get(:@last_y) || player.y)
+          predicted_x = player.x + player_dx * 2.0
+          predicted_y = player.y + player_dy * 2.0
+          
+          return {
+            type: :final_boss_spiral,
+            damage: @damage * 1.3,
+            radius: 60,
+            delay: 2.0,
+            center_x: predicted_x,
+            center_y: predicted_y,
+            count: 5,  # 5 кругов в спирали
+            enemy: self
+          }
+        when 1
+          # Паттерн 2: Крест из больших кругов
+          player_dx = player.x - (player.instance_variable_get(:@last_x) || player.x)
+          player_dy = player.y - (player.instance_variable_get(:@last_y) || player.y)
+          predicted_x = player.x + player_dx * 1.8
+          predicted_y = player.y + player_dy * 1.8
+          
+          return {
+            type: :final_boss_cross,
+            damage: @damage * 1.4,
+            radius: 90,
+            delay: 2.2,
+            center_x: predicted_x,
+            center_y: predicted_y,
+            enemy: self
+          }
+        when 2
+          # Паттерн 3: Кольцо из кругов вокруг игрока
+          player_dx = player.x - (player.instance_variable_get(:@last_x) || player.x)
+          player_dy = player.y - (player.instance_variable_get(:@last_y) || player.y)
+          predicted_x = player.x + player_dx * 2.0
+          predicted_y = player.y + player_dy * 2.0
+          
+          return {
+            type: :final_boss_ring,
+            damage: @damage * 1.2,
+            radius: 70,
+            delay: 2.0,
+            center_x: predicted_x,
+            center_y: predicted_y,
+            count: 8,  # 8 кругов в кольце
+            enemy: self
+          }
+        when 3
+          # Паттерн 4: Волна из кругов в направлении игрока
+          player_dx = player.x - (player.instance_variable_get(:@last_x) || player.x)
+          player_dy = player.y - (player.instance_variable_get(:@last_y) || player.y)
+          predicted_x = player.x + player_dx * 2.0
+          predicted_y = player.y + player_dy * 2.0
+          
+          return {
+            type: :final_boss_wave,
+            damage: @damage * 1.3,
+            radius: 80,
+            delay: 2.0,
+            center_x: predicted_x,
+            center_y: predicted_y,
+            count: 4,  # 4 круга в волне
+            enemy: self
+          }
+        when 4
+          # Паттерн 5: Огромный взрыв вокруг босса
+          return {
+            type: :final_boss_explosion,
+            damage: @damage * 1.5,
+            radius: 200,
+            delay: 2.5,
+            x: @x,
+            y: @y,
+            enemy: self
+          }
+        end
+      else
+        # Обычный босс - простые паттерны
+        attack_pattern = rand(3)
+        
+        case attack_pattern
+        when 0
+          # Паттерн 1: Несколько кругов вокруг игрока (веерная атака)
+          player_dx = player.x - (player.instance_variable_get(:@last_x) || player.x)
+          player_dy = player.y - (player.instance_variable_get(:@last_y) || player.y)
+          predicted_x = player.x + player_dx * 2.0
+          predicted_y = player.y + player_dy * 2.0
+          
+          return {
+            type: :boss_pattern_circles,
+            damage: @damage * 1.2,
+            radius: 70,
+            delay: 1.8,
+            center_x: predicted_x,
+            center_y: predicted_y,
+            count: 3,  # 3 круга
+            enemy: self
+          }
+        when 1
+          # Паттерн 2: Большой круг на позиции игрока с предсказанием
+          player_dx = player.x - (player.instance_variable_get(:@last_x) || player.x)
+          player_dy = player.y - (player.instance_variable_get(:@last_y) || player.y)
+          predicted_x = player.x + player_dx * 1.8
+          predicted_y = player.y + player_dy * 1.8
+          
+          return {
+            type: :boss_pattern_large_circle,
+            damage: @damage * 1.5,
+            radius: 100,
+            delay: 2.0,
+            x: predicted_x,
+            y: predicted_y,
+            enemy: self
+          }
+        when 2
+          # Паттерн 3: Атака по области вокруг босса (ближняя)
+          return {
+            type: :boss_pattern_nearby,
+            damage: @damage * 1.3,
+            radius: 120,
+            delay: 1.5,
+            x: @x,
+            y: @y,
+            enemy: self
+          }
+        end
+      end
+    end
+    
+    # Уникальные атаки элитных монстров
+    if @elite
+      case @enemy_type
+      when :elite_mage
+        # Дальняя атака элитного мага - индикация красным кругом на позиции игрока
+        attack_radius = 80
+        attack_damage = @damage * 1.2
+        # Возвращаем информацию для индикации атаки
+        return { 
+          type: :ranged_attack, 
+          damage: attack_damage, 
+          radius: attack_radius, 
+          x: player.x, 
+          y: player.y,
+          delay: 1.5  # Задержка перед ударом (время показа индикации)
+        }
+      when :elite_knight
+        # Ближняя атака элитного рыцаря - обычная атака, но с индикацией
+        # Ближний бой, радиус как у обычных мобов (30)
+        return nil  # Ближний бой без специальной индикации
+      end
+    end
+    
+    nil
   end
 
   def distance_to(x, y)
@@ -151,11 +557,14 @@ class Enemy
   end
 
   def take_damage(amount)
+    old_health = @health
     @health -= amount
     @health = 0 if @health < 0
     @took_damage = true
     @just_died = @health <= 0 && @was_alive
     @was_alive = @health > 0
+    # Возвращаем реально нанесенный урон
+    [old_health - @health, 0].max
   end
 
   def just_died?
@@ -172,18 +581,20 @@ class Enemy
 
   def draw(camera = nil)
     return unless alive?
+    return unless @sprite # Не рисуем, если спрайт не создан
 
     # Обновляем позицию спрайта с учетом камеры
-    if @sprite
-      if camera
-        screen_x, screen_y = camera.world_to_screen(@x, @y)
-        @sprite.x = screen_x
-        @sprite.y = screen_y
-      else
-        @sprite.x = @x
-        @sprite.y = @y
-      end
+    if camera
+      screen_x, screen_y = camera.world_to_screen(@x, @y)
+      @sprite.x = screen_x
+      @sprite.y = screen_y
+    else
+      @sprite.x = @x
+      @sprite.y = @y
     end
+    
+    # ВАЖНО: Обновляем позиции всех фигур спрайта с учетом экранных координат
+    @sprite.update_all_positions if @sprite.respond_to?(:update_all_positions)
 
     # Спрайт рисуется автоматически через Ruby2D
     # Рисуем полоску здоровья (с учетом камеры)
@@ -237,9 +648,16 @@ class Enemy
   end
 
   def remove
-    @sprite&.remove
+    # Удаляем спрайт и все его фигуры
+    if @sprite
+      @sprite.remove if @sprite.respond_to?(:remove)
+      @sprite = nil
+    end
+    # Удаляем полоску здоровья
     @health_bar_bg&.remove
     @health_bar&.remove
+    @health_bar_bg = nil
+    @health_bar = nil
   end
 end
 

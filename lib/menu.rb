@@ -35,6 +35,9 @@ class Menu
     )
     @subtitle_text.x = @window_width / 2 - @subtitle_text.width / 2
 
+    # Загружаем и отображаем лучший рекорд
+    load_and_display_high_score
+
     # Создаем тексты для пунктов меню
     @menu_items.each_with_index do |item, index|
       y_pos = @window_height / 2 + index * 60
@@ -47,6 +50,48 @@ class Menu
         font: nil
       )
       @texts[item].x = @window_width / 2 - @texts[item].width / 2
+    end
+  end
+  
+  def load_and_display_high_score
+    require_relative 'game'
+    high_score = Game.load_high_score
+    
+    if high_score && high_score[:enemies_killed] > 0
+      minutes = high_score[:time_alive] / 60
+      seconds = high_score[:time_alive] % 60
+      score_text = "Лучший результат: #{high_score[:enemies_killed]} убийств | Уровень: #{high_score[:level]} | Время: #{minutes}м #{seconds}с"
+      
+      @high_score_text = Text.new(
+        score_text,
+        x: @window_width / 2,
+        y: @window_height / 4 + 120,
+        size: 18,
+        color: '#FFD700',
+        font: nil
+      )
+      @high_score_text.x = @window_width / 2 - @high_score_text.width / 2
+      
+      @date_text = Text.new(
+        "Дата: #{high_score[:date]}",
+        x: @window_width / 2,
+        y: @window_height / 4 + 145,
+        size: 14,
+        color: '#AAAAAA',
+        font: nil
+      )
+      @date_text.x = @window_width / 2 - @date_text.width / 2
+    else
+      @high_score_text = Text.new(
+        'Лучший результат: Нет рекордов',
+        x: @window_width / 2,
+        y: @window_height / 4 + 120,
+        size: 18,
+        color: '#888888',
+        font: nil
+      )
+      @high_score_text.x = @window_width / 2 - @high_score_text.width / 2
+      @date_text = nil
     end
   end
 
@@ -96,7 +141,16 @@ class Menu
   def remove
     @title_text&.remove
     @subtitle_text&.remove
+    @high_score_text&.remove
+    @date_text&.remove
     @texts.values.each(&:remove)
+  end
+  
+  def refresh_high_score
+    # Обновляем отображение рекорда (например, после завершения игры)
+    @high_score_text&.remove
+    @date_text&.remove
+    load_and_display_high_score
   end
 end
 

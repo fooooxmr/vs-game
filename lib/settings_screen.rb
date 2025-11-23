@@ -46,7 +46,7 @@ class SettingsScreen
     
     # Подсказка внизу экрана
     @hint_text = Text.new(
-      'Используйте A/D или ←/→ для изменения значений. ESC - назад',
+      '↑↓ - навигация | ←→ - изменение | Enter - выбрать | ESC - назад',
       x: @window_width / 2,
       y: @window_height - 30,
       size: 18,
@@ -70,9 +70,8 @@ class SettingsScreen
       ]
     when 'Игровые'
       @current_category_items = [
-        { name: 'Сложность', value: @settings.difficulty, type: :select, options: ['easy', 'normal', 'hard'] },
-        { name: 'Скорость спавна', value: @settings.spawn_rate, type: :slider, min: 0.5, max: 5.0, step: 0.5 },
-        { name: 'Макс. врагов', value: @settings.max_enemies, type: :slider, min: 10, max: 50, step: 5 }
+        { name: 'Сложность', value: @settings.difficulty, type: :select, options: ['easy', 'normal', 'hard', 'nightmare'] },
+        { name: 'Назад', value: nil, type: :back }
       ]
     when 'Назад'
       @current_category_items = []
@@ -118,7 +117,23 @@ class SettingsScreen
     when :toggle
       item[:value] ? 'Вкл' : 'Выкл'
     when :select
-      item[:value].to_s.capitalize
+      case item[:name]
+      when 'Сложность'
+        case item[:value].to_s
+        when 'easy'
+          'Легкая'
+        when 'normal'
+          'Нормальная'
+        when 'hard'
+          'Сложная'
+        when 'nightmare'
+          'Кошмар'
+        else
+          item[:value].to_s.capitalize
+        end
+      else
+        item[:value].to_s.capitalize
+      end
     else
       item[:value].to_s
     end
@@ -146,43 +161,46 @@ class SettingsScreen
 
   def handle_key_down(key)
     case key
-    when 'left', 'a'
-      if @selected_category > 0
-        @selected_category -= 1
-        update_category_items
-      end
-    when 'right', 'd'
-      if @selected_category < @categories.length - 1
-        @selected_category += 1
-        update_category_items
-      end
     when 'up', 'w'
+      # Навигация вверх по пунктам меню
       if @current_category_items.length > 0
         @selected_index = (@selected_index - 1) % @current_category_items.length
       end
     when 'down', 's'
+      # Навигация вниз по пунктам меню
       if @current_category_items.length > 0
         @selected_index = (@selected_index + 1) % @current_category_items.length
       end
+    when 'left', 'a'
+      # Изменение значения настройки влево
+      if @current_category_items.length > 0 && @selected_index < @current_category_items.length
+        item = @current_category_items[@selected_index]
+        if item[:name] != 'Назад'
+          change_setting(-1)
+        end
+      end
+    when 'right', 'd'
+      # Изменение значения настройки вправо
+      if @current_category_items.length > 0 && @selected_index < @current_category_items.length
+        item = @current_category_items[@selected_index]
+        if item[:name] != 'Назад'
+          change_setting(1)
+        end
+      end
     when 'return', 'enter'
+      # Выбор пункта меню или категории
+      if @categories[@selected_category] == 'Назад'
+        return :back
+      elsif @current_category_items.length > 0 && @selected_index < @current_category_items.length
+        item = @current_category_items[@selected_index]
+        if item[:name] == 'Назад'
+          return :back
+        end
+      end
       return select_item
     when 'escape'
+      # Возврат назад
       return :back
-    end
-
-    # Изменение значений (только если не навигация по категориям)
-    if @current_category_items.length > 0 && @selected_index < @current_category_items.length
-      item = @current_category_items[@selected_index]
-      # Изменяем значения только если не переключаем категории
-      if key == 'left' && @selected_category > 0
-        # Это навигация по категориям, не меняем значение
-      elsif key == 'right' && @selected_category < @categories.length - 1
-        # Это навигация по категориям, не меняем значение
-      elsif ['left', 'right', 'a', 'd'].include?(key)
-        # Изменяем значение настройки
-        direction = (key == 'right' || key == 'd') ? 1 : -1
-        change_setting(direction)
-      end
     end
 
     nil
@@ -235,13 +253,28 @@ class SettingsScreen
           @settings.apply_difficulty
           # Обновляем значения в других настройках
           update_category_items
+          # Сохраняем настройки при изменении сложности
+          @settings.save_to_file
         end
       end
     end
   end
 
   def select_item
-    return :back if @categories[@selected_category] == 'Назад'
+    # При выборе категории переходим к её настройкам
+    # Если уже в категории, выбираем настройку
+    if @current_category_items.length > 0 && @selected_index < @current_category_items.length
+      item = @current_category_items[@selected_index]
+      if item[:name] == 'Назад'
+        return :back
+      end
+      # Для toggle переключаем значение при выборе
+      if item[:type] == :toggle
+        item[:value] = !item[:value]
+        @settings.fullscreen = item[:value] if item[:name] == 'Полноэкранный'
+        update_settings_texts
+      end
+    end
     nil
   end
 

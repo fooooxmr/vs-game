@@ -1,5 +1,5 @@
 class Projectile
-  attr_accessor :x, :y, :angle, :speed, :damage, :range, :traveled_distance, :type, :active
+  attr_accessor :x, :y, :angle, :speed, :damage, :range, :traveled_distance, :type, :active, :last_damage_dealt
 
   def initialize(type, x, y, angle, damage, speed = 0, range = 100, options = {})
     @type = type
@@ -17,6 +17,7 @@ class Projectile
     @shapes = []
     @time_alive = 0
     @shape_offsets = [] # Смещения фигур от центра проектиля
+    @last_damage_dealt = 0 # Урон, нанесенный этим проектилем (для вампиризма)
     create_shapes
   end
 
@@ -101,6 +102,9 @@ class Projectile
     # Кнут - мгновенная атака в направлении, наносим урон всем врагам в радиусе
     return unless @active
     
+    # Сбрасываем урон перед расчетом
+    @last_damage_dealt = 0
+    
     # Находим всех врагов в радиусе атаки
     enemies.each do |enemy|
       next unless enemy.alive?
@@ -112,7 +116,8 @@ class Projectile
         angle_diff = [angle_diff, 2 * Math::PI - angle_diff].min
         
         if angle_diff <= Math::PI / 3 # 60 градусов
-          enemy.take_damage(@damage)
+          damage_dealt = enemy.take_damage(@damage)
+          @last_damage_dealt += damage_dealt if damage_dealt > 0
         end
       end
     end
